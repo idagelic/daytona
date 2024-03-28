@@ -45,12 +45,12 @@ var gitCredCmd = &cobra.Command{
 		}
 
 		var gitCredentials GitCredentials
-		serverConfig, res, err := apiClient.ServerAPI.GetConfig(ctx).Execute()
+		gitProviders, res, err := apiClient.GitProviderAPI.ListGitProviders(ctx).Execute()
 		if err != nil {
 			log.Fatal(apiclient.HandleErrorResponse(res, err))
 		}
 
-		gitProvider := gitprovider.GetGitProviderFromHost(host, serverConfig.GitProviders)
+		gitProvider := gitprovider.GetGitProviderFromHost(host, gitProviders)
 
 		if gitProvider == nil {
 			fmt.Println("error: git provider not found")
