@@ -15,7 +15,58 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/gitprovider/{gitProviderId}/user-data": {
+        "/gitprovider": {
+            "get": {
+                "description": "List git providers",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gitProvider"
+                ],
+                "summary": "List git providers",
+                "operationId": "ListGitProviders",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/GitProvider"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Set Git provider",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gitProvider"
+                ],
+                "summary": "Set Git provider",
+                "operationId": "SetGitProvider",
+                "parameters": [
+                    {
+                        "description": "Git provider",
+                        "name": "gitProviderData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/GitProvider"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/gitprovider/context/{gitUrl}": {
             "get": {
                 "description": "Get Git context",
                 "produces": [
@@ -25,7 +76,227 @@ const docTemplate = `{
                     "gitProvider"
                 ],
                 "summary": "Get Git context",
-                "operationId": "GetGitUserData",
+                "operationId": "GetGitContext",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Git URL",
+                        "name": "gitUrl",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Repository"
+                        }
+                    }
+                }
+            }
+        },
+        "/gitprovider/repositories/branches": {
+            "get": {
+                "description": "Get Git repository branches",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gitProvider"
+                ],
+                "summary": "Get Git repository branches",
+                "operationId": "GetRepoBranches",
+                "parameters": [
+                    {
+                        "description": "Repository artifacts request",
+                        "name": "artifacts",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/GetRepoArtifactsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/GitBranch"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/gitprovider/repositories/pull-requests": {
+            "get": {
+                "description": "Get Git repository PRs",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gitProvider"
+                ],
+                "summary": "Get Git repository PRs",
+                "operationId": "GetRepoPRs",
+                "parameters": [
+                    {
+                        "description": "Repository artifacts request",
+                        "name": "artifacts",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/GetRepoArtifactsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/GitPullRequest"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/gitprovider/username-from-token": {
+            "get": {
+                "description": "Get username from token",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gitProvider"
+                ],
+                "summary": "Get username from token",
+                "operationId": "GetGitUsernameFromToken",
+                "parameters": [
+                    {
+                        "description": "Git provider",
+                        "name": "gitProviderData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/GitProvider"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/gitprovider/{gitProviderId}": {
+            "get": {
+                "description": "Get Git provider",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gitProvider"
+                ],
+                "summary": "Get Git provider",
+                "operationId": "GetGitProvider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Git provider",
+                        "name": "gitProviderId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/GitProvider"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Remove Git provider",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gitProvider"
+                ],
+                "summary": "Remove Git provider",
+                "operationId": "RemoveGitProvider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Git provider",
+                        "name": "gitProviderId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/gitprovider/{gitProviderId}/namespaces": {
+            "get": {
+                "description": "Get Git namespaces",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gitProvider"
+                ],
+                "summary": "Get Git namespaces",
+                "operationId": "GetNamespaces",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Git provider",
+                        "name": "gitProviderId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/GitNamespace"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/gitprovider/{gitProviderId}/user": {
+            "get": {
+                "description": "Get Git context",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gitProvider"
+                ],
+                "summary": "Get Git context",
+                "operationId": "GetGitUser",
                 "parameters": [
                     {
                         "type": "string",
@@ -39,7 +310,47 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/GitUserData"
+                            "$ref": "#/definitions/GitUser"
+                        }
+                    }
+                }
+            }
+        },
+        "/gitprovider/{gitProviderId}/{namespaceId}/repositories": {
+            "get": {
+                "description": "Get Git repositories",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gitProvider"
+                ],
+                "summary": "Get Git repositories",
+                "operationId": "GetRepositories",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Git provider",
+                        "name": "gitProviderId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Namespace",
+                        "name": "namespaceId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Repository"
+                            }
                         }
                     }
                 }
@@ -201,36 +512,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ServerConfig"
-                        }
-                    }
-                }
-            }
-        },
-        "/server/get-git-context/{gitUrl}": {
-            "get": {
-                "description": "Get Git context",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "server"
-                ],
-                "summary": "Get Git context",
-                "operationId": "GetGitContext",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Git URL",
-                        "name": "gitUrl",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/Repository"
                         }
                     }
                 }
@@ -586,6 +867,42 @@ const docTemplate = `{
                 }
             }
         },
+        "GetRepoArtifactsRequest": {
+            "type": "object",
+            "properties": {
+                "gitProviderId": {
+                    "type": "string"
+                },
+                "namespaceId": {
+                    "type": "string"
+                },
+                "repository": {
+                    "$ref": "#/definitions/Repository"
+                }
+            }
+        },
+        "GitBranch": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "sha": {
+                    "type": "string"
+                }
+            }
+        },
+        "GitNamespace": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "GitProvider": {
             "type": "object",
             "properties": {
@@ -603,13 +920,30 @@ const docTemplate = `{
                 }
             }
         },
-        "GitUserData": {
+        "GitPullRequest": {
+            "type": "object",
+            "properties": {
+                "branch": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "GitUser": {
             "type": "object",
             "properties": {
                 "email": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "string"
+                },
                 "name": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }

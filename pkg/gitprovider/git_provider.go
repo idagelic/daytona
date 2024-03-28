@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/daytonaio/daytona/cmd/daytona/config"
 	"github.com/daytonaio/daytona/pkg/serverapiclient"
 	"github.com/daytonaio/daytona/pkg/types"
 )
@@ -16,46 +15,13 @@ import (
 const personalNamespaceId = "<PERSONAL>"
 
 type GitProvider interface {
-	GetNamespaces() ([]GitNamespace, error)
+	GetNamespaces() ([]types.GitNamespace, error)
 	GetRepositories(namespace string) ([]types.Repository, error)
-	GetUserData() (GitUser, error)
-	GetRepoBranches(types.Repository, string) ([]GitBranch, error)
-	GetRepoPRs(types.Repository, string) ([]GitPullRequest, error)
+	GetUser() (types.GitUser, error)
+	GetRepoBranches(types.Repository, string) ([]types.GitBranch, error)
+	GetRepoPRs(types.Repository, string) ([]types.GitPullRequest, error)
 	// ParseGitUrl(string) (*types.Repository, error)
 }
-
-type GitUser struct {
-	Id       string
-	Username string
-	Name     string
-	Email    string
-}
-
-type GitNamespace struct {
-	Id   string
-	Name string
-}
-
-type GitBranch struct {
-	Name string
-	SHA  string
-}
-
-type GitPullRequest struct {
-	Name   string
-	Branch string
-}
-
-type CheckoutOption struct {
-	Title string
-	Id    string
-}
-
-var (
-	CheckoutDefault = CheckoutOption{Title: "Clone the default branch", Id: "default"}
-	CheckoutBranch  = CheckoutOption{Title: "Branches", Id: "branch"}
-	CheckoutPR      = CheckoutOption{Title: "Pull/Merge requests", Id: "pullrequest"}
-)
 
 func GetGitProvider(providerId string, gitProviders []types.GitProvider) GitProvider {
 	var chosenProvider *types.GitProvider
@@ -104,7 +70,7 @@ func GetGitProvider(providerId string, gitProviders []types.GitProvider) GitProv
 	}
 }
 
-func GetUsernameFromToken(providerId string, gitProviders []config.GitProvider, token string, baseApiUrl string) (string, error) {
+func GetUsernameFromToken(providerId string, token string, baseApiUrl string) (string, error) {
 	var gitProvider GitProvider
 
 	switch providerId {
@@ -137,7 +103,7 @@ func GetUsernameFromToken(providerId string, gitProviders []config.GitProvider, 
 		return "", errors.New("provider not found")
 	}
 
-	gitUser, err := gitProvider.GetUserData()
+	gitUser, err := gitProvider.GetUser()
 	if err != nil {
 		return "", errors.New("user not found")
 	}

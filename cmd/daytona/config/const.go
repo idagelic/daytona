@@ -41,14 +41,14 @@ func GetIdeList() []Ide {
 	return ides
 }
 
-func GetGitProviderList() []GitProvider {
-	return []GitProvider{
-		{"github", "GitHub", ""},
-		{"gitlab", "GitLab", ""},
-		{"gitlab-self-managed", "GitLab Self-managed", ""},
-		{"bitbucket", "Bitbucket", ""},
-		{"codeberg", "Codeberg", ""},
-		{"gitea", "Gitea", ""},
+func GetSupportedGitProviders() []SupportedGitProvider {
+	return []SupportedGitProvider{
+		{"github", "GitHub"},
+		{"gitlab", "GitLab"},
+		{"gitlab-self-managed", "GitLab Self-managed"},
+		{"bitbucket", "Bitbucket"},
+		{"codeberg", "Codeberg"},
+		{"gitea", "Gitea"},
 	}
 }
 

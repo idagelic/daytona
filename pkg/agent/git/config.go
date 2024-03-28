@@ -9,7 +9,7 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-func SetGitConfig(userData *serverapiclient.GitUserData) error {
+func SetGitConfig(userData *serverapiclient.GitUser) error {
 	gitConfigFileName := path.Join(os.Getenv("HOME"), ".gitconfig")
 
 	var gitConfigContent []byte

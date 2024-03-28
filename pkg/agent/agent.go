@@ -59,15 +59,15 @@ func Start() error {
 		log.Info("Repository already exists. Skipping clone...")
 	}
 
-	var gitUserData *serverapiclient.GitUserData
+	var gitUser *serverapiclient.GitUser
 	if gitProvider != nil {
-		gitUserData, err = getGitUserData(*gitProvider.Id)
+		gitUser, err = getGitUser(*gitProvider.Id)
 		if err != nil {
 			log.Error(fmt.Sprintf("failed to get git user data: %s", err))
 		}
 	}
 
-	err = git.SetGitConfig(gitUserData)
+	err = git.SetGitConfig(gitUser)
 	if err != nil {
 		log.Error(fmt.Sprintf("failed to set git config: %s", err))
 	}
@@ -113,13 +113,13 @@ func getGitProvider(repoUrl string) (*serverapiclient.GitProvider, error) {
 	return nil, nil
 }
 
-func getGitUserData(gitProviderId string) (*serverapiclient.GitUserData, error) {
+func getGitUser(gitProviderId string) (*serverapiclient.GitUser, error) {
 	apiClient, err := server.GetApiClient(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	userData, res, err := apiClient.GitProviderAPI.GetGitUserData(context.Background(), gitProviderId).Execute()
+	userData, res, err := apiClient.GitProviderAPI.GetGitUser(context.Background(), gitProviderId).Execute()
 	if err != nil {
 		return nil, apiclient.HandleErrorResponse(res, err)
 	}

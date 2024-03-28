@@ -18,11 +18,12 @@ import (
 	"github.com/daytonaio/daytona/internal/util/apiclient"
 	"github.com/daytonaio/daytona/internal/util/apiclient/server"
 	"github.com/daytonaio/daytona/pkg/serverapiclient"
-	"github.com/daytonaio/daytona/pkg/types"
+	gitprovider_view "github.com/daytonaio/daytona/pkg/views/gitprovider"
 	"github.com/daytonaio/daytona/pkg/views/target"
 	view_util "github.com/daytonaio/daytona/pkg/views/util"
-	"github.com/daytonaio/daytona/pkg/views/workspace/create"
+	create_view "github.com/daytonaio/daytona/pkg/views/workspace/create"
 	"github.com/daytonaio/daytona/pkg/views/workspace/info"
+	"github.com/daytonaio/daytona/pkg/views/workspace/selection"
 	status "github.com/daytonaio/daytona/pkg/views/workspace/status"
 	"tailscale.com/tsnet"
 
@@ -40,7 +41,7 @@ var CreateCmd = &cobra.Command{
 	Args:  cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-		var repos []types.Repository
+		var repos []serverapiclient.Repository
 		var workspaceName string
 
 		apiClient, err := server.GetApiClient(nil)
@@ -74,10 +75,10 @@ var CreateCmd = &cobra.Command{
 		visited := make(map[string]bool)
 
 		for _, repo := range repos {
-			if visited[repo.Url] {
+			if visited[*repo.Url] {
 				log.Fatalf("Error: duplicate repository url: %s", repo.Url)
 			}
-			visited[repo.Url] = true
+			visited[*repo.Url] = true
 		}
 
 		target, err := getTarget(activeProfile.Name)
@@ -93,16 +94,6 @@ var CreateCmd = &cobra.Command{
 		tsConn, err := tailscale.GetConnection(&activeProfile)
 		if err != nil {
 			log.Fatal(err)
-		}
-
-		var requestRepos []serverapiclient.Repository
-		for _, repo := range repos {
-			requestRepo := serverapiclient.Repository{
-				Name:   &repo.Name,
-				Url:    &repo.Url,
-				Branch: &repo.Branch,
-			}
-			requestRepos = append(requestRepos, requestRepo)
 		}
 
 		statusProgram := tea.NewProgram(status.NewModel())
@@ -127,7 +118,7 @@ var CreateCmd = &cobra.Command{
 		createdWorkspace, res, err := apiClient.WorkspaceAPI.CreateWorkspace(ctx).Workspace(serverapiclient.CreateWorkspace{
 			Name:         &workspaceName,
 			Target:       target.Name,
-			Repositories: requestRepos,
+			Repositories: repos,
 		}).Execute()
 		if err != nil {
 			cleanUpTerminal(statusProgram, apiclient.HandleErrorResponse(res, err))
@@ -206,7 +197,7 @@ func getTarget(activeProfileName string) (*serverapiclient.ProviderTarget, error
 	return target.GetTargetFromPrompt(targets, activeProfileName, false)
 }
 
-func processPrompting(cmd *cobra.Command, apiClient *serverapiclient.APIClient, workspaceName *string, repos *[]types.Repository, ctx context.Context) {
+func processPrompting(cmd *cobra.Command, apiClient *serverapiclient.APIClient, workspaceName *string, repos *[]serverapiclient.Repository, ctx context.Context) {
 	manual, err := cmd.Flags().GetBool("manual")
 	if err != nil {
 		log.Fatal(err)
@@ -240,32 +231,14 @@ func processPrompting(cmd *cobra.Command, apiClient *serverapiclient.APIClient, 
 		workspaceNames = append(workspaceNames, *workspaceInfo.Name)
 	}
 
-	var gitProviderList []types.GitProvider
-	for _, serverGitProvider := range serverConfig.GitProviders {
-		var gitProvider types.GitProvider
-		if serverGitProvider.Id != nil {
-			gitProvider.Id = *serverGitProvider.Id
-		}
-		if serverGitProvider.Username != nil {
-			gitProvider.Username = *serverGitProvider.Username
-		}
-		if serverGitProvider.Token != nil {
-			gitProvider.Token = *serverGitProvider.Token
-		}
-		if serverGitProvider.BaseApiUrl != nil {
-			gitProvider.BaseApiUrl = *serverGitProvider.BaseApiUrl
-		}
-		gitProviderList = append(gitProviderList, gitProvider)
-	}
-
-	*workspaceName, *repos, err = create.GetCreationDataFromPrompt(workspaceNames, gitProviderList, manual, multiProjectFlag)
+	*workspaceName, *repos, err = GetCreationDataFromPrompt(workspaceNames, serverConfig.GitProviders, manual, multiProjectFlag)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 }
 
-func processCmdArguments(cmd *cobra.Command, args []string, apiClient *serverapiclient.APIClient, workspaceName *string, repos *[]types.Repository, ctx context.Context) {
+func processCmdArguments(cmd *cobra.Command, args []string, apiClient *serverapiclient.APIClient, workspaceName *string, repos *[]serverapiclient.Repository, ctx context.Context) {
 	var repoUrls []string
 
 	validatedWorkspaceName, err := util.GetValidatedWorkspaceName(args[0])
@@ -287,13 +260,13 @@ func processCmdArguments(cmd *cobra.Command, args []string, apiClient *serverapi
 
 	for _, repoUrl := range repoUrls {
 		encodedURLParam := url.QueryEscape(repoUrl)
-		repoResponse, res, err := apiClient.ServerAPI.GetGitContext(ctx, encodedURLParam).Execute()
+		repoResponse, res, err := apiClient.GitProviderAPI.GetGitContext(ctx, encodedURLParam).Execute()
 		if err != nil {
 			log.Fatal(apiclient.HandleErrorResponse(res, err))
 		}
 
-		repo := &types.Repository{
-			Url: *repoResponse.Url,
+		repo := &serverapiclient.Repository{
+			Url: repoResponse.Url,
 		}
 
 		*repos = append(*repos, *repo)
@@ -355,4 +328,197 @@ func cleanUpTerminal(statusProgram *tea.Program, err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func GetCreationDataFromPrompt(workspaceNames []string, userGitProviders []serverapiclient.GitProvider, manual bool, multiProject bool) (workspaceName string, projectRepositoryList []serverapiclient.Repository, err error) {
+	var projectRepoList []serverapiclient.Repository
+	var providerRepo serverapiclient.Repository
+
+	if !manual && userGitProviders != nil && len(userGitProviders) > 0 {
+		providerRepo, err = GetRepositoryFromWizard(userGitProviders, 0)
+		if err != nil {
+			return "", nil, err
+		}
+		if providerRepo == (serverapiclient.Repository{}) {
+			return "", nil, nil
+		}
+	}
+
+	workspaceCreationPromptResponse, err := create_view.RunInitialForm(providerRepo, multiProject)
+	if err != nil {
+		return "", nil, err
+	}
+
+	if workspaceCreationPromptResponse.PrimaryRepository == (serverapiclient.Repository{}) {
+		return "", nil, errors.New("primary repository is required")
+	}
+
+	projectRepoList = []serverapiclient.Repository{workspaceCreationPromptResponse.PrimaryRepository}
+
+	if workspaceCreationPromptResponse.SecondaryProjectCount > 0 {
+
+		if !manual && userGitProviders != nil && len(userGitProviders) > 0 {
+			for i := 0; i < workspaceCreationPromptResponse.SecondaryProjectCount; i++ {
+				providerRepo, err = GetRepositoryFromWizard(userGitProviders, i+1)
+				if err != nil {
+					return "", nil, err
+				}
+				if providerRepo == (serverapiclient.Repository{}) {
+					return "", nil, nil
+				}
+				workspaceCreationPromptResponse.SecondaryRepositories = append(workspaceCreationPromptResponse.SecondaryRepositories, providerRepo)
+			}
+		}
+
+		workspaceCreationPromptResponse, err = create_view.RunSecondaryProjectsForm(workspaceCreationPromptResponse)
+		if err != nil {
+			return "", nil, err
+		}
+
+		projectRepoList = append(projectRepoList, workspaceCreationPromptResponse.SecondaryRepositories...)
+	}
+
+	suggestedName := create_view.GetSuggestedWorkspaceName(*workspaceCreationPromptResponse.PrimaryRepository.Url)
+
+	workspaceCreationPromptResponse, err = create_view.RunWorkspaceNameForm(workspaceCreationPromptResponse, suggestedName, workspaceNames)
+	if err != nil {
+		return "", nil, err
+	}
+
+	if workspaceCreationPromptResponse.WorkspaceName == "" {
+		return "", nil, errors.New("workspace name is required")
+	}
+
+	return workspaceCreationPromptResponse.WorkspaceName, projectRepoList, nil
+}
+
+func GetRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, secondaryProjectOrder int) (serverapiclient.Repository, error) {
+	var providerId string
+	var namespaceId string
+	var branchName string
+	var checkoutOptions []selection.CheckoutOption
+
+	supportedProviders := config.GetSupportedGitProviders()
+	var gitProviderViewList []gitprovider_view.GitProviderView
+
+	for _, gitProvider := range userGitProviders {
+		for _, supportedProvider := range supportedProviders {
+			if *gitProvider.Id == supportedProvider.Id {
+				gitProviderViewList = append(gitProviderViewList,
+					gitprovider_view.GitProviderView{
+						Id:       *gitProvider.Id,
+						Name:     supportedProvider.Name,
+						Username: *gitProvider.Username,
+					},
+				)
+			}
+		}
+	}
+	providerId = selection.GetProviderIdFromPrompt(gitProviderViewList, secondaryProjectOrder)
+	if providerId == "" {
+		return serverapiclient.Repository{}, nil
+	}
+
+	if providerId == selection.CustomRepoIdentifier {
+		return serverapiclient.Repository{
+			Id: &selection.CustomRepoIdentifier,
+		}, nil
+	}
+
+	ctx := context.Background()
+
+	apiClient, err := server.GetApiClient(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	namespaceList, _, err := apiClient.GitProviderAPI.GetNamespaces(ctx, providerId).Execute()
+	if err != nil {
+		return serverapiclient.Repository{}, err
+	}
+
+	if len(namespaceList) == 1 {
+		namespaceId = *namespaceList[0].Id
+	} else {
+		namespaceId = selection.GetNamespaceIdFromPrompt(namespaceList, secondaryProjectOrder)
+		if namespaceId == "" {
+			return serverapiclient.Repository{}, errors.New("namespace not found")
+		}
+	}
+
+	providerRepos, _, err := apiClient.GitProviderAPI.GetRepositories(ctx, providerId, namespaceId).Execute()
+	if err != nil {
+		return serverapiclient.Repository{}, err
+	}
+
+	chosenRepo := selection.GetRepositoryFromPrompt(providerRepos, secondaryProjectOrder)
+	if chosenRepo == (serverapiclient.Repository{}) {
+		return serverapiclient.Repository{}, nil
+	}
+
+	req := serverapiclient.GetRepoArtifactsRequest{
+		GitProviderId: &providerId,
+		NamespaceId:   &namespaceId,
+		Repository:    &chosenRepo,
+	}
+
+	branchList, _, err := apiClient.GitProviderAPI.GetRepoBranches(ctx).Artifacts(req).Execute()
+	if err != nil {
+		return serverapiclient.Repository{}, err
+	}
+
+	if len(branchList) == 0 {
+		return serverapiclient.Repository{}, errors.New("no branches found")
+	}
+
+	if len(branchList) == 1 {
+		branchName = *branchList[0].Name
+		chosenRepo.Branch = &branchName
+		return chosenRepo, nil
+	}
+
+	// TODO: Add support for Bitbucket
+	if providerId == "bitbucket" {
+		return chosenRepo, nil
+	}
+
+	prList, _, err := apiClient.GitProviderAPI.GetRepoPRs(ctx).Artifacts(req).Execute()
+	if err != nil {
+		return serverapiclient.Repository{}, err
+	}
+	if len(prList) == 0 {
+		branchName = selection.GetBranchNameFromPrompt(branchList, secondaryProjectOrder)
+		if branchName == "" {
+			return serverapiclient.Repository{}, nil
+		}
+		chosenRepo.Branch = &branchName
+
+		return chosenRepo, nil
+	}
+
+	checkoutOptions = append(checkoutOptions, selection.CheckoutDefault)
+	checkoutOptions = append(checkoutOptions, selection.CheckoutBranch)
+	checkoutOptions = append(checkoutOptions, selection.CheckoutPR)
+
+	chosenCheckoutOption := selection.GetCheckoutOptionFromPrompt(secondaryProjectOrder, checkoutOptions)
+	if chosenCheckoutOption == selection.CheckoutDefault {
+		return chosenRepo, nil
+	}
+
+	if chosenCheckoutOption == selection.CheckoutBranch {
+		branchName = selection.GetBranchNameFromPrompt(branchList, secondaryProjectOrder)
+		if branchName == "" {
+			return serverapiclient.Repository{}, nil
+		}
+		chosenRepo.Branch = &branchName
+	} else if chosenCheckoutOption == selection.CheckoutPR {
+		chosenPullRequest := selection.GetPullRequestFromPrompt(prList, secondaryProjectOrder)
+		if *chosenPullRequest.Branch == "" {
+			return serverapiclient.Repository{}, nil
+		}
+
+		chosenRepo.Branch = chosenPullRequest.Branch
+	}
+
+	return chosenRepo, nil
 }

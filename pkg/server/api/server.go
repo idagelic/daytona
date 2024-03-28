@@ -68,7 +68,6 @@ func GetServer() (*http.Server, error) {
 		serverController.GET("/config", server.GetConfig)
 		serverController.POST("/config", server.SetConfig)
 		serverController.POST("/network-key", server.GenerateNetworkKey)
-		serverController.GET("/get-git-context/:gitUrl", server.GetGitContext)
 	}
 
 	binaryController := router.Group("/binary")
@@ -110,9 +109,19 @@ func GetServer() (*http.Server, error) {
 		logController.GET("/workspace/:workspaceId", log_controller.ReadWorkspaceLog)
 	}
 
-	gitProivderController := router.Group("/gitprovider")
+	gitProviderController := router.Group("/gitprovider")
 	{
-		gitProivderController.GET("/:gitProviderId/user-data", gitprovider.GetGitUserData)
+		gitProviderController.GET("/", gitprovider.ListGitProviders)
+		gitProviderController.POST("/", gitprovider.SetGitProvider)
+		gitProviderController.DELETE("/:gitProviderId", gitprovider.RemoveGitProvider)
+		gitProviderController.GET("/:gitProviderId", gitprovider.GetGitProvider)
+		gitProviderController.GET("/:gitProviderId/user", gitprovider.GetGitUser)
+		gitProviderController.GET("/:gitProviderId/namespaces", gitprovider.GetNamespaces)
+		gitProviderController.GET("/:gitProviderId/:namespaceId/repositories", gitprovider.GetRepositories)
+		gitProviderController.GET("/repositories/branches", gitprovider.GetRepoBranches)
+		gitProviderController.GET("/repositories/pull-requests", gitprovider.GetRepoPRs)
+		gitProviderController.GET("/context/:gitUrl", gitprovider.GetGitContext)
+		gitProviderController.GET("/username-from-token", gitprovider.GetGitUsernameFromToken)
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
