@@ -7,18 +7,19 @@ import (
 	"errors"
 
 	"github.com/daytonaio/daytona/pkg/serverapiclient"
+	create_view "github.com/daytonaio/daytona/pkg/views/workspace/create"
 )
 
-func GetCreationDataFromPrompt(workspaceNames []string, userGitProviders []serverapiclient.GitProvider, manual bool, multiProject bool) (workspaceName string, projectRepositoryList []serverapiclient.Repository, err error) {
-	var projectRepoList []serverapiclient.Repository
-	var providerRepo serverapiclient.Repository
+func GetCreationDataFromPrompt(workspaceNames []string, userGitProviders []serverapiclient.GitProvider, manual bool, multiProject bool) (workspaceName string, projectRepositoryList []serverapiclient.GitRepository, err error) {
+	var projectRepoList []serverapiclient.GitRepository
+	var providerRepo serverapiclient.GitRepository
 
 	if !manual && userGitProviders != nil && len(userGitProviders) > 0 {
 		providerRepo, err = getRepositoryFromWizard(userGitProviders, 0)
 		if err != nil {
 			return "", nil, err
 		}
-		if providerRepo == (serverapiclient.Repository{}) {
+		if providerRepo == (serverapiclient.GitRepository{}) {
 			return "", nil, nil
 		}
 	}
@@ -28,11 +29,11 @@ func GetCreationDataFromPrompt(workspaceNames []string, userGitProviders []serve
 		return "", nil, err
 	}
 
-	if workspaceCreationPromptResponse.PrimaryRepository == (serverapiclient.Repository{}) {
+	if workspaceCreationPromptResponse.PrimaryRepository == (serverapiclient.GitRepository{}) {
 		return "", nil, errors.New("primary repository is required")
 	}
 
-	projectRepoList = []serverapiclient.Repository{workspaceCreationPromptResponse.PrimaryRepository}
+	projectRepoList = []serverapiclient.GitRepository{workspaceCreationPromptResponse.PrimaryRepository}
 
 	if workspaceCreationPromptResponse.SecondaryProjectCount > 0 {
 
@@ -42,7 +43,7 @@ func GetCreationDataFromPrompt(workspaceNames []string, userGitProviders []serve
 				if err != nil {
 					return "", nil, err
 				}
-				if providerRepo == (serverapiclient.Repository{}) {
+				if providerRepo == (serverapiclient.GitRepository{}) {
 					return "", nil, nil
 				}
 				workspaceCreationPromptResponse.SecondaryRepositories = append(workspaceCreationPromptResponse.SecondaryRepositories, providerRepo)

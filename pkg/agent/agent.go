@@ -10,7 +10,6 @@ import (
 
 	"github.com/daytonaio/daytona/internal/util/apiclient"
 	"github.com/daytonaio/daytona/internal/util/apiclient/server"
-	"github.com/daytonaio/daytona/pkg/gitprovider"
 	"github.com/daytonaio/daytona/pkg/serverapiclient"
 	log "github.com/sirupsen/logrus"
 )
@@ -93,17 +92,18 @@ func (a *Agent) getProject() (*serverapiclient.Project, error) {
 }
 
 func (a *Agent) getGitProvider(repoUrl string) (*serverapiclient.GitProvider, error) {
+	ctx := context.Background()
+
 	apiClient, err := server.GetApiClient(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	serverConfig, res, err := apiClient.ServerAPI.GetConfig(context.Background()).Execute()
+	gitProvider, res, err := apiClient.GitProviderAPI.GetGitProviderForUrl(ctx, repoUrl).Execute()
 	if err != nil {
-		return nil, apiclient.HandleErrorResponse(res, err)
+		log.Fatal(apiclient.HandleErrorResponse(res, err))
 	}
 
-	gitProvider := gitprovider.GetGitProviderFromHost(repoUrl, serverConfig.GitProviders)
 	if gitProvider != nil {
 		return gitProvider, nil
 	}

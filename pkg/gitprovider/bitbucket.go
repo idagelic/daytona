@@ -82,16 +82,20 @@ func (g *BitbucketGitProvider) GetRepositories(namespace string) ([]types.GitRep
 			log.Fatal("Invalid HTML link")
 		}
 
+		url := htmlLink["href"].(string)
+		repoSlug := url[strings.LastIndex(url, "/")+1:]
+
 		response = append(response, types.GitRepository{
+			Id:   repoSlug,
 			Name: repo.Name,
-			Url:  htmlLink["href"].(string),
+			Url:  url,
 		})
 	}
 
 	return response, err
 }
 
-func (g *BitbucketGitProvider) GetRepoBranches(repo types.GitRepository, namespaceId string) ([]types.GitBranch, error) {
+func (g *BitbucketGitProvider) GetRepoBranches(repositoryId string, namespaceId string) ([]types.GitBranch, error) {
 	client := g.getApiClient()
 	var response []types.GitBranch
 
@@ -105,11 +109,10 @@ func (g *BitbucketGitProvider) GetRepoBranches(repo types.GitRepository, namespa
 
 	// Custom API call implementation
 
-	repoSlug := repo.Url[strings.LastIndex(repo.Url, "/")+1:]
 	authString := fmt.Sprintf("%s:%s", g.username, g.token)
 	encodedAuth := base64.StdEncoding.EncodeToString([]byte(authString))
 
-	url := fmt.Sprintf("https://api.bitbucket.org/2.0/repositories/%s/%s/refs/branches", namespaceId, repoSlug)
+	url := fmt.Sprintf("https://api.bitbucket.org/2.0/repositories/%s/%s/refs/branches", namespaceId, repositoryId)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -152,7 +155,7 @@ func (g *BitbucketGitProvider) GetRepoBranches(repo types.GitRepository, namespa
 	return response, nil
 }
 
-func (g *BitbucketGitProvider) GetRepoPRs(repo types.GitRepository, namespaceId string) ([]types.GitPullRequest, error) {
+func (g *BitbucketGitProvider) GetRepoPRs(repositoryId string, namespaceId string) ([]types.GitPullRequest, error) {
 	client := g.getApiClient()
 	var response []types.GitPullRequest
 
@@ -166,7 +169,7 @@ func (g *BitbucketGitProvider) GetRepoPRs(repo types.GitRepository, namespaceId 
 
 	prList, err := client.Repositories.PullRequests.Get(&bitbucket.PullRequestsOptions{
 		Owner:    namespaceId,
-		RepoSlug: repo.Name,
+		RepoSlug: repositoryId,
 	})
 
 	if err != nil {

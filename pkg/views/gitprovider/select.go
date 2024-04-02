@@ -66,7 +66,7 @@ func GitProviderSelectionView(gitProviderAddView *serverapiclient.GitProvider, u
 					return nil
 				}),
 		).WithHideFunc(func() bool {
-			return isDeleting || *gitProviderAddView.Id != "bitbucket"
+			return isDeleting || !providerRequiresUsername(*gitProviderAddView.Id)
 		}),
 		huh.NewGroup(
 			huh.NewInput().
@@ -80,7 +80,7 @@ func GitProviderSelectionView(gitProviderAddView *serverapiclient.GitProvider, u
 					return nil
 				}),
 		).WithHideFunc(func() bool {
-			return isDeleting || (*gitProviderAddView.Id != "gitlab-self-managed" && *gitProviderAddView.Id != "gitea")
+			return isDeleting || !providerRequiresApiUrl(*gitProviderAddView.Id)
 		}),
 		huh.NewGroup(
 			huh.NewInput().
@@ -102,4 +102,12 @@ func GitProviderSelectionView(gitProviderAddView *serverapiclient.GitProvider, u
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func providerRequiresUsername(gitProviderId string) bool {
+	return gitProviderId == "bitbucket"
+}
+
+func providerRequiresApiUrl(gitProviderId string) bool {
+	return gitProviderId == "gitlab-self-managed" || gitProviderId == "gitea"
 }

@@ -20,7 +20,7 @@ var _ MappedNullable = &GitPullRequest{}
 // GitPullRequest struct for GitPullRequest
 type GitPullRequest struct {
 	Branch *string `json:"branch,omitempty"`
-	Name *string `json:"name,omitempty"`
+	Name   *string `json:"name,omitempty"`
 }
 
 // NewGitPullRequest instantiates a new GitPullRequest object
@@ -105,7 +105,7 @@ func (o *GitPullRequest) SetName(v string) {
 }
 
 func (o GitPullRequest) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -158,5 +158,3 @@ func (v *NullableGitPullRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

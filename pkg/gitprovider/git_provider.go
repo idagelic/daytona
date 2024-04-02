@@ -5,10 +5,7 @@ package gitprovider
 
 import (
 	"errors"
-	"fmt"
-	"strings"
 
-	"github.com/daytonaio/daytona/pkg/serverapiclient"
 	"github.com/daytonaio/daytona/pkg/types"
 )
 
@@ -18,8 +15,8 @@ type GitProvider interface {
 	GetNamespaces() ([]types.GitNamespace, error)
 	GetRepositories(namespace string) ([]types.GitRepository, error)
 	GetUser() (types.GitUser, error)
-	GetRepoBranches(types.GitRepository, string) ([]types.GitBranch, error)
-	GetRepoPRs(types.GitRepository, string) ([]types.GitPullRequest, error)
+	GetRepoBranches(repositoryId string, namespaceId string) ([]types.GitBranch, error)
+	GetRepoPRs(repositoryId string, namespaceId string) ([]types.GitPullRequest, error)
 	// ParseGitUrl(string) (*types.GitRepository, error)
 }
 
@@ -109,31 +106,4 @@ func GetUsernameFromToken(providerId string, token string, baseApiUrl string) (s
 	}
 
 	return gitUser.Username, nil
-}
-
-func GetGitProviderFromHost(url string, gitProviders []serverapiclient.GitProvider) *serverapiclient.GitProvider {
-	for _, gitProvider := range gitProviders {
-		if strings.Contains(url, fmt.Sprintf("%s.", *gitProvider.Id)) {
-			return &gitProvider
-		}
-
-		if *gitProvider.BaseApiUrl != "" && strings.Contains(url, getHostnameFromUrl(*gitProvider.BaseApiUrl)) {
-			return &gitProvider
-		}
-	}
-	return nil
-}
-
-func getHostnameFromUrl(url string) string {
-	input := url
-	input = strings.TrimPrefix(input, "https://")
-	input = strings.TrimPrefix(input, "http://")
-	input = strings.TrimPrefix(input, "www.")
-
-	// Remove everything after the first '/'
-	if slashIndex := strings.Index(input, "/"); slashIndex != -1 {
-		input = input[:slashIndex]
-	}
-
-	return input
 }

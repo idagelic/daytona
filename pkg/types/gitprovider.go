@@ -18,15 +18,15 @@ type GitUser struct {
 } // @name GitUser
 
 type GitRepository struct {
-	Id       string   `json:"id,omitempty"`
+	Id       string   `json:"id"`
 	Url      string   `json:"url"`
 	Name     string   `json:"name"`
-	Branch   string   `json:"branch,omitempty"`
+	Branch   *string  `json:"branch,omitempty"`
 	Sha      string   `json:"sha"`
 	Owner    string   `json:"owner"`
-	PrNumber uint32   `json:"prNumber,omitempty"`
+	PrNumber *uint32  `json:"prNumber,omitempty"`
 	Source   string   `json:"source"`
-	Path     string   `json:"path,omitempty"`
+	Path     *string  `json:"path,omitempty"`
 	GitUser  *GitUser `json:"-"`
 } // @name GitRepository
 

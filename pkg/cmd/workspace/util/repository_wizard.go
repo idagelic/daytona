@@ -11,10 +11,11 @@ import (
 	"github.com/daytonaio/daytona/cmd/daytona/config"
 	"github.com/daytonaio/daytona/internal/util/apiclient/server"
 	"github.com/daytonaio/daytona/pkg/serverapiclient"
+	gitprovider_view "github.com/daytonaio/daytona/pkg/views/gitprovider"
 	"github.com/daytonaio/daytona/pkg/views/workspace/selection"
 )
 
-func getRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, secondaryProjectOrder int) (serverapiclient.Repository, error) {
+func getRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, secondaryProjectOrder int) (serverapiclient.GitRepository, error) {
 	var providerId string
 	var namespaceId string
 	var branchName string
@@ -38,11 +39,11 @@ func getRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, sec
 	}
 	providerId = selection.GetProviderIdFromPrompt(gitProviderViewList, secondaryProjectOrder)
 	if providerId == "" {
-		return serverapiclient.Repository{}, nil
+		return serverapiclient.GitRepository{}, nil
 	}
 
 	if providerId == selection.CustomRepoIdentifier {
-		return serverapiclient.Repository{
+		return serverapiclient.GitRepository{
 			Id: &selection.CustomRepoIdentifier,
 		}, nil
 	}
@@ -56,7 +57,7 @@ func getRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, sec
 
 	namespaceList, _, err := apiClient.GitProviderAPI.GetNamespaces(ctx, providerId).Execute()
 	if err != nil {
-		return serverapiclient.Repository{}, err
+		return serverapiclient.GitRepository{}, err
 	}
 
 	if len(namespaceList) == 1 {
@@ -64,33 +65,27 @@ func getRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, sec
 	} else {
 		namespaceId = selection.GetNamespaceIdFromPrompt(namespaceList, secondaryProjectOrder)
 		if namespaceId == "" {
-			return serverapiclient.Repository{}, errors.New("namespace not found")
+			return serverapiclient.GitRepository{}, errors.New("namespace not found")
 		}
 	}
 
 	providerRepos, _, err := apiClient.GitProviderAPI.GetRepositories(ctx, providerId, namespaceId).Execute()
 	if err != nil {
-		return serverapiclient.Repository{}, err
+		return serverapiclient.GitRepository{}, err
 	}
 
 	chosenRepo := selection.GetRepositoryFromPrompt(providerRepos, secondaryProjectOrder)
-	if chosenRepo == (serverapiclient.Repository{}) {
-		return serverapiclient.Repository{}, nil
+	if chosenRepo == (serverapiclient.GitRepository{}) {
+		return serverapiclient.GitRepository{}, nil
 	}
 
-	req := serverapiclient.GetRepoArtifactsRequest{
-		GitProviderId: &providerId,
-		NamespaceId:   &namespaceId,
-		Repository:    &chosenRepo,
-	}
-
-	branchList, _, err := apiClient.GitProviderAPI.GetRepoBranches(ctx).Artifacts(req).Execute()
+	branchList, _, err := apiClient.GitProviderAPI.GetRepoBranches(ctx, providerId, namespaceId, *chosenRepo.Id).Execute()
 	if err != nil {
-		return serverapiclient.Repository{}, err
+		return serverapiclient.GitRepository{}, err
 	}
 
 	if len(branchList) == 0 {
-		return serverapiclient.Repository{}, errors.New("no branches found")
+		return serverapiclient.GitRepository{}, errors.New("no branches found")
 	}
 
 	if len(branchList) == 1 {
@@ -104,14 +99,14 @@ func getRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, sec
 		return chosenRepo, nil
 	}
 
-	prList, _, err := apiClient.GitProviderAPI.GetRepoPRs(ctx).Artifacts(req).Execute()
+	prList, _, err := apiClient.GitProviderAPI.GetRepoPRs(ctx, providerId, namespaceId, *chosenRepo.Id).Execute()
 	if err != nil {
-		return serverapiclient.Repository{}, err
+		return serverapiclient.GitRepository{}, err
 	}
 	if len(prList) == 0 {
 		branchName = selection.GetBranchNameFromPrompt(branchList, secondaryProjectOrder)
 		if branchName == "" {
-			return serverapiclient.Repository{}, nil
+			return serverapiclient.GitRepository{}, nil
 		}
 		chosenRepo.Branch = &branchName
 
@@ -130,13 +125,13 @@ func getRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, sec
 	if chosenCheckoutOption == selection.CheckoutBranch {
 		branchName = selection.GetBranchNameFromPrompt(branchList, secondaryProjectOrder)
 		if branchName == "" {
-			return serverapiclient.Repository{}, nil
+			return serverapiclient.GitRepository{}, nil
 		}
 		chosenRepo.Branch = &branchName
 	} else if chosenCheckoutOption == selection.CheckoutPR {
 		chosenPullRequest := selection.GetPullRequestFromPrompt(prList, secondaryProjectOrder)
 		if *chosenPullRequest.Branch == "" {
-			return serverapiclient.Repository{}, nil
+			return serverapiclient.GitRepository{}, nil
 		}
 
 		chosenRepo.Branch = chosenPullRequest.Branch

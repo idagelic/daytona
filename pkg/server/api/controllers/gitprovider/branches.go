@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/daytonaio/daytona/pkg/gitprovider"
-	"github.com/daytonaio/daytona/pkg/server/api/controllers/gitprovider/dto"
 	"github.com/daytonaio/daytona/pkg/server/config"
 	"github.com/gin-gonic/gin"
 )
@@ -18,19 +17,18 @@ import (
 //	@Tags			gitProvider
 //	@Summary		Get Git repository branches
 //	@Description	Get Git repository branches
-//	@Param			artifacts	body	GetRepoArtifactsRequest	true	"Repository artifacts request"
+//	@Param			gitProviderId	path	string	true	"Git provider"
+//	@Param			namespaceId		path	string	true	"Namespace"
+//	@Param			repositoryId	path	string	true	"Repository"
 //	@Produce		json
 //	@Success		200	{array}	GitBranch
 //	@Router			/gitprovider/repositories/branches [get]
 //
 //	@id				GetRepoBranches
 func GetRepoBranches(ctx *gin.Context) {
-	var req dto.GetRepoArtifactsRequest
-	err := ctx.BindJSON(&req)
-	if err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid request body: %s", err.Error()))
-		return
-	}
+	gitProviderId := ctx.Param("gitProviderId")
+	namespaceId := ctx.Param("namespaceId")
+	repositoryId := ctx.Param("repositoryId")
 
 	c, err := config.GetConfig()
 	if err != nil {
@@ -38,15 +36,13 @@ func GetRepoBranches(ctx *gin.Context) {
 		return
 	}
 
-	gitProvider := gitprovider.GetGitProvider(req.GitProviderId, c.GitProviders)
+	gitProvider := gitprovider.GetGitProvider(gitProviderId, c.GitProviders)
 	if gitProvider == nil {
 		ctx.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 
-	fmt.Println(req)
-
-	response, err := gitProvider.GetRepoBranches(req.Repository, req.NamespaceId)
+	response, err := gitProvider.GetRepoBranches(repositoryId, namespaceId)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, fmt.Errorf("failed to get branches: %s", err.Error()))
 		return

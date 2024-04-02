@@ -13,7 +13,6 @@ import (
 
 	"github.com/daytonaio/daytona/internal/util/apiclient"
 	"github.com/daytonaio/daytona/internal/util/apiclient/server"
-	"github.com/daytonaio/daytona/pkg/gitprovider"
 	"github.com/spf13/cobra"
 )
 
@@ -44,13 +43,10 @@ var gitCredCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		var gitCredentials GitCredentials
-		gitProviders, res, err := apiClient.GitProviderAPI.ListGitProviders(ctx).Execute()
+		gitProvider, res, err := apiClient.GitProviderAPI.GetGitProviderForUrl(ctx, host).Execute()
 		if err != nil {
 			log.Fatal(apiclient.HandleErrorResponse(res, err))
 		}
-
-		gitProvider := gitprovider.GetGitProviderFromHost(host, gitProviders)
 
 		if gitProvider == nil {
 			fmt.Println("error: git provider not found")
@@ -58,7 +54,7 @@ var gitCredCmd = &cobra.Command{
 			return
 		}
 
-		gitCredentials = GitCredentials{
+		gitCredentials := GitCredentials{
 			Username: *gitProvider.Username,
 			Token:    *gitProvider.Token,
 		}

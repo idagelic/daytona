@@ -16,28 +16,6 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/gitprovider": {
-            "get": {
-                "description": "List git providers",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gitProvider"
-                ],
-                "summary": "List git providers",
-                "operationId": "ListGitProviders",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/GitProvider"
-                            }
-                        }
-                    }
-                }
-            },
             "post": {
                 "description": "Set Git provider",
                 "produces": [
@@ -96,6 +74,36 @@ const docTemplate = `{
                 }
             }
         },
+        "/gitprovider/get-by-url/{url}": {
+            "get": {
+                "description": "Get Git provider",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gitProvider"
+                ],
+                "summary": "Get Git provider",
+                "operationId": "GetGitProviderForUrl",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Url",
+                        "name": "url",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/GitProvider"
+                        }
+                    }
+                }
+            }
+        },
         "/gitprovider/repositories/branches": {
             "get": {
                 "description": "Get Git repository branches",
@@ -109,13 +117,25 @@ const docTemplate = `{
                 "operationId": "GetRepoBranches",
                 "parameters": [
                     {
-                        "description": "Repository artifacts request",
-                        "name": "artifacts",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/GetRepoArtifactsRequest"
-                        }
+                        "type": "string",
+                        "description": "Git provider",
+                        "name": "gitProviderId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Namespace",
+                        "name": "namespaceId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Repository",
+                        "name": "repositoryId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -144,13 +164,25 @@ const docTemplate = `{
                 "operationId": "GetRepoPRs",
                 "parameters": [
                     {
-                        "description": "Repository artifacts request",
-                        "name": "artifacts",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/GetRepoArtifactsRequest"
-                        }
+                        "type": "string",
+                        "description": "Git provider",
+                        "name": "gitProviderId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Namespace",
+                        "name": "namespaceId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Repository",
+                        "name": "repositoryId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -864,20 +896,6 @@ const docTemplate = `{
                 },
                 "protocol": {
                     "type": "string"
-                }
-            }
-        },
-        "GetRepoArtifactsRequest": {
-            "type": "object",
-            "properties": {
-                "gitProviderId": {
-                    "type": "string"
-                },
-                "namespaceId": {
-                    "type": "string"
-                },
-                "repository": {
-                    "$ref": "#/definitions/GitRepository"
                 }
             }
         },

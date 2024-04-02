@@ -6,13 +6,13 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**GetGitContext**](GitProviderAPI.md#GetGitContext) | **Get** /gitprovider/context/{gitUrl} | Get Git context
 [**GetGitProvider**](GitProviderAPI.md#GetGitProvider) | **Get** /gitprovider/{gitProviderId} | Get Git provider
+[**GetGitProviderForUrl**](GitProviderAPI.md#GetGitProviderForUrl) | **Get** /gitprovider/get-by-url/{url} | Get Git provider
 [**GetGitUser**](GitProviderAPI.md#GetGitUser) | **Get** /gitprovider/{gitProviderId}/user | Get Git context
 [**GetGitUsernameFromToken**](GitProviderAPI.md#GetGitUsernameFromToken) | **Get** /gitprovider/username-from-token | Get username from token
 [**GetNamespaces**](GitProviderAPI.md#GetNamespaces) | **Get** /gitprovider/{gitProviderId}/namespaces | Get Git namespaces
 [**GetRepoBranches**](GitProviderAPI.md#GetRepoBranches) | **Get** /gitprovider/repositories/branches | Get Git repository branches
 [**GetRepoPRs**](GitProviderAPI.md#GetRepoPRs) | **Get** /gitprovider/repositories/pull-requests | Get Git repository PRs
 [**GetRepositories**](GitProviderAPI.md#GetRepositories) | **Get** /gitprovider/{gitProviderId}/{namespaceId}/repositories | Get Git repositories
-[**ListGitProviders**](GitProviderAPI.md#ListGitProviders) | **Get** /gitprovider | List git providers
 [**RemoveGitProvider**](GitProviderAPI.md#RemoveGitProvider) | **Delete** /gitprovider/{gitProviderId} | Remove Git provider
 [**SetGitProvider**](GitProviderAPI.md#SetGitProvider) | **Post** /gitprovider | Set Git provider
 
@@ -134,6 +134,76 @@ Name | Type | Description  | Notes
 ### Other Parameters
 
 Other parameters are passed through a pointer to a apiGetGitProviderRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+### Return type
+
+[**GitProvider**](GitProvider.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## GetGitProviderForUrl
+
+> GitProvider GetGitProviderForUrl(ctx, url).Execute()
+
+Get Git provider
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID/serverapiclient"
+)
+
+func main() {
+	url := "url_example" // string | Url
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.GitProviderAPI.GetGitProviderForUrl(context.Background(), url).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `GitProviderAPI.GetGitProviderForUrl``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `GetGitProviderForUrl`: GitProvider
+	fmt.Fprintf(os.Stdout, "Response from `GitProviderAPI.GetGitProviderForUrl`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**url** | **string** | Url | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetGitProviderForUrlRequest struct via the builder pattern
 
 
 Name | Type | Description  | Notes
@@ -366,7 +436,7 @@ No authorization required
 
 ## GetRepoBranches
 
-> []GitBranch GetRepoBranches(ctx).Artifacts(artifacts).Execute()
+> []GitBranch GetRepoBranches(ctx, gitProviderId, namespaceId, repositoryId).Execute()
 
 Get Git repository branches
 
@@ -385,11 +455,13 @@ import (
 )
 
 func main() {
-	artifacts := *openapiclient.NewGetRepoArtifactsRequest() // GetRepoArtifactsRequest | Repository artifacts request
+	gitProviderId := "gitProviderId_example" // string | Git provider
+	namespaceId := "namespaceId_example" // string | Namespace
+	repositoryId := "repositoryId_example" // string | Repository
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.GitProviderAPI.GetRepoBranches(context.Background()).Artifacts(artifacts).Execute()
+	resp, r, err := apiClient.GitProviderAPI.GetRepoBranches(context.Background(), gitProviderId, namespaceId, repositoryId).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `GitProviderAPI.GetRepoBranches``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -402,6 +474,12 @@ func main() {
 ### Path Parameters
 
 
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**gitProviderId** | **string** | Git provider | 
+**namespaceId** | **string** | Namespace | 
+**repositoryId** | **string** | Repository | 
 
 ### Other Parameters
 
@@ -410,7 +488,9 @@ Other parameters are passed through a pointer to a apiGetRepoBranchesRequest str
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artifacts** | [**GetRepoArtifactsRequest**](GetRepoArtifactsRequest.md) | Repository artifacts request | 
+
+
+
 
 ### Return type
 
@@ -432,7 +512,7 @@ No authorization required
 
 ## GetRepoPRs
 
-> []GitPullRequest GetRepoPRs(ctx).Artifacts(artifacts).Execute()
+> []GitPullRequest GetRepoPRs(ctx, gitProviderId, namespaceId, repositoryId).Execute()
 
 Get Git repository PRs
 
@@ -451,11 +531,13 @@ import (
 )
 
 func main() {
-	artifacts := *openapiclient.NewGetRepoArtifactsRequest() // GetRepoArtifactsRequest | Repository artifacts request
+	gitProviderId := "gitProviderId_example" // string | Git provider
+	namespaceId := "namespaceId_example" // string | Namespace
+	repositoryId := "repositoryId_example" // string | Repository
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.GitProviderAPI.GetRepoPRs(context.Background()).Artifacts(artifacts).Execute()
+	resp, r, err := apiClient.GitProviderAPI.GetRepoPRs(context.Background(), gitProviderId, namespaceId, repositoryId).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `GitProviderAPI.GetRepoPRs``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -468,6 +550,12 @@ func main() {
 ### Path Parameters
 
 
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**gitProviderId** | **string** | Git provider | 
+**namespaceId** | **string** | Namespace | 
+**repositoryId** | **string** | Repository | 
 
 ### Other Parameters
 
@@ -476,7 +564,9 @@ Other parameters are passed through a pointer to a apiGetRepoPRsRequest struct v
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artifacts** | [**GetRepoArtifactsRequest**](GetRepoArtifactsRequest.md) | Repository artifacts request | 
+
+
+
 
 ### Return type
 
@@ -554,67 +644,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**[]GitRepository**](GitRepository.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
-[[Back to Model list]](../README.md#documentation-for-models)
-[[Back to README]](../README.md)
-
-
-## ListGitProviders
-
-> []GitProvider ListGitProviders(ctx).Execute()
-
-List git providers
-
-
-
-### Example
-
-```go
-package main
-
-import (
-	"context"
-	"fmt"
-	"os"
-	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID/serverapiclient"
-)
-
-func main() {
-
-	configuration := openapiclient.NewConfiguration()
-	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.GitProviderAPI.ListGitProviders(context.Background()).Execute()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error when calling `GitProviderAPI.ListGitProviders``: %v\n", err)
-		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
-	}
-	// response from `ListGitProviders`: []GitProvider
-	fmt.Fprintf(os.Stdout, "Response from `GitProviderAPI.ListGitProviders`: %v\n", resp)
-}
-```
-
-### Path Parameters
-
-This endpoint does not need any parameter.
-
-### Other Parameters
-
-Other parameters are passed through a pointer to a apiListGitProvidersRequest struct via the builder pattern
-
-
-### Return type
-
-[**[]GitProvider**](GitProvider.md)
 
 ### Authorization
 

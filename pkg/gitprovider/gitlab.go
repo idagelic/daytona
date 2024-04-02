@@ -83,11 +83,11 @@ func (g *GitLabGitProvider) GetRepositories(namespace string) ([]types.GitReposi
 	return response, err
 }
 
-func (g *GitLabGitProvider) GetRepoBranches(repo types.GitRepository, namespaceId string) ([]types.GitBranch, error) {
+func (g *GitLabGitProvider) GetRepoBranches(repositoryId string, namespaceId string) ([]types.GitBranch, error) {
 	client := g.getApiClient()
 	var response []types.GitBranch
 
-	branches, _, err := client.Branches.ListBranches(repo.Id, &gitlab.ListBranchesOptions{})
+	branches, _, err := client.Branches.ListBranches(repositoryId, &gitlab.ListBranchesOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -105,11 +105,11 @@ func (g *GitLabGitProvider) GetRepoBranches(repo types.GitRepository, namespaceI
 	return response, nil
 }
 
-func (g *GitLabGitProvider) GetRepoPRs(repo types.GitRepository, namespaceId string) ([]types.GitPullRequest, error) {
+func (g *GitLabGitProvider) GetRepoPRs(repositoryId string, namespaceId string) ([]types.GitPullRequest, error) {
 	client := g.getApiClient()
 	var response []types.GitPullRequest
 
-	mergeRequests, _, err := client.MergeRequests.ListProjectMergeRequests(repo.Id, &gitlab.ListProjectMergeRequestsOptions{})
+	mergeRequests, _, err := client.MergeRequests.ListProjectMergeRequests(repositoryId, &gitlab.ListProjectMergeRequestsOptions{})
 	if err != nil {
 		return nil, err
 	}

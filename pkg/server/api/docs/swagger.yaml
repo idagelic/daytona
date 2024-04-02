@@ -20,15 +20,6 @@ definitions:
       protocol:
         type: string
     type: object
-  GetRepoArtifactsRequest:
-    properties:
-      gitProviderId:
-        type: string
-      namespaceId:
-        type: string
-      repository:
-        $ref: '#/definitions/GitRepository'
-    type: object
   GitBranch:
     properties:
       name:
@@ -277,21 +268,6 @@ info:
   version: 0.1.0
 paths:
   /gitprovider:
-    get:
-      description: List git providers
-      operationId: ListGitProviders
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/GitProvider'
-            type: array
-      summary: List git providers
-      tags:
-      - gitProvider
     post:
       description: Set Git provider
       operationId: SetGitProvider
@@ -436,17 +412,46 @@ paths:
       summary: Get Git context
       tags:
       - gitProvider
+  /gitprovider/get-by-url/{url}:
+    get:
+      description: Get Git provider
+      operationId: GetGitProviderForUrl
+      parameters:
+      - description: Url
+        in: path
+        name: url
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/GitProvider'
+      summary: Get Git provider
+      tags:
+      - gitProvider
   /gitprovider/repositories/branches:
     get:
       description: Get Git repository branches
       operationId: GetRepoBranches
       parameters:
-      - description: Repository artifacts request
-        in: body
-        name: artifacts
+      - description: Git provider
+        in: path
+        name: gitProviderId
         required: true
-        schema:
-          $ref: '#/definitions/GetRepoArtifactsRequest'
+        type: string
+      - description: Namespace
+        in: path
+        name: namespaceId
+        required: true
+        type: string
+      - description: Repository
+        in: path
+        name: repositoryId
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -464,12 +469,21 @@ paths:
       description: Get Git repository PRs
       operationId: GetRepoPRs
       parameters:
-      - description: Repository artifacts request
-        in: body
-        name: artifacts
+      - description: Git provider
+        in: path
+        name: gitProviderId
         required: true
-        schema:
-          $ref: '#/definitions/GetRepoArtifactsRequest'
+        type: string
+      - description: Namespace
+        in: path
+        name: namespaceId
+        required: true
+        type: string
+      - description: Repository
+        in: path
+        name: repositoryId
+        required: true
+        type: string
       produces:
       - application/json
       responses:

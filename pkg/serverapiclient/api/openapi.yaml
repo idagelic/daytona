@@ -8,21 +8,6 @@ servers:
 - url: http://localhost:3000/
 paths:
   /gitprovider:
-    get:
-      description: List git providers
-      operationId: ListGitProviders
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/GitProvider'
-                type: array
-          description: OK
-      summary: List git providers
-      tags:
-      - gitProvider
     post:
       description: Set Git provider
       operationId: SetGitProvider
@@ -62,17 +47,50 @@ paths:
       summary: Get Git context
       tags:
       - gitProvider
+  /gitprovider/get-by-url/{url}:
+    get:
+      description: Get Git provider
+      operationId: GetGitProviderForUrl
+      parameters:
+      - description: Url
+        in: path
+        name: url
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GitProvider'
+          description: OK
+      summary: Get Git provider
+      tags:
+      - gitProvider
   /gitprovider/repositories/branches:
     get:
       description: Get Git repository branches
       operationId: GetRepoBranches
-      requestBody:
-        content:
-          '*/*':
-            schema:
-              $ref: '#/components/schemas/GetRepoArtifactsRequest'
-        description: Repository artifacts request
+      parameters:
+      - description: Git provider
+        in: path
+        name: gitProviderId
         required: true
+        schema:
+          type: string
+      - description: Namespace
+        in: path
+        name: namespaceId
+        required: true
+        schema:
+          type: string
+      - description: Repository
+        in: path
+        name: repositoryId
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -85,18 +103,29 @@ paths:
       summary: Get Git repository branches
       tags:
       - gitProvider
-      x-codegen-request-body-name: artifacts
   /gitprovider/repositories/pull-requests:
     get:
       description: Get Git repository PRs
       operationId: GetRepoPRs
-      requestBody:
-        content:
-          '*/*':
-            schema:
-              $ref: '#/components/schemas/GetRepoArtifactsRequest'
-        description: Repository artifacts request
+      parameters:
+      - description: Git provider
+        in: path
+        name: gitProviderId
         required: true
+        schema:
+          type: string
+      - description: Namespace
+        in: path
+        name: namespaceId
+        required: true
+        schema:
+          type: string
+      - description: Repository
+        in: path
+        name: repositoryId
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -109,7 +138,6 @@ paths:
       summary: Get Git repository PRs
       tags:
       - gitProvider
-      x-codegen-request-body-name: artifacts
   /gitprovider/username-from-token:
     get:
       description: Get username from token
@@ -630,28 +658,6 @@ components:
           type: integer
         protocol:
           type: string
-      type: object
-    GetRepoArtifactsRequest:
-      example:
-        namespaceId: namespaceId
-        repository:
-          owner: owner
-          path: path
-          name: name
-          id: id
-          source: source
-          prNumber: 0
-          branch: branch
-          sha: sha
-          url: url
-        gitProviderId: gitProviderId
-      properties:
-        gitProviderId:
-          type: string
-        namespaceId:
-          type: string
-        repository:
-          $ref: '#/components/schemas/GitRepository'
       type: object
     GitBranch:
       example:

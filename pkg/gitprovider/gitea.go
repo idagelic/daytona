@@ -87,7 +87,7 @@ func (g *GiteaGitProvider) GetRepositories(namespace string) ([]types.GitReposit
 
 	for _, repo := range repoList {
 		response = append(response, types.GitRepository{
-			Id:   strconv.FormatInt(repo.ID, 10),
+			Id:   repo.Name,
 			Name: repo.Name,
 			Url:  repo.HTMLURL,
 		})
@@ -96,7 +96,7 @@ func (g *GiteaGitProvider) GetRepositories(namespace string) ([]types.GitReposit
 	return response, err
 }
 
-func (g *GiteaGitProvider) GetRepoBranches(repo types.GitRepository, namespaceId string) ([]types.GitBranch, error) {
+func (g *GiteaGitProvider) GetRepoBranches(repositoryId string, namespaceId string) ([]types.GitBranch, error) {
 	client, err := g.getApiClient()
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (g *GiteaGitProvider) GetRepoBranches(repo types.GitRepository, namespaceId
 		namespaceId = user.Username
 	}
 
-	repoBranches, _, err := client.ListRepoBranches(namespaceId, repo.Name, gitea.ListRepoBranchesOptions{
+	repoBranches, _, err := client.ListRepoBranches(namespaceId, repositoryId, gitea.ListRepoBranchesOptions{
 		ListOptions: gitea.ListOptions{
 			Page:     1,
 			PageSize: 100,
@@ -135,7 +135,7 @@ func (g *GiteaGitProvider) GetRepoBranches(repo types.GitRepository, namespaceId
 	return response, nil
 }
 
-func (g *GiteaGitProvider) GetRepoPRs(repo types.GitRepository, namespaceId string) ([]types.GitPullRequest, error) {
+func (g *GiteaGitProvider) GetRepoPRs(repositoryId string, namespaceId string) ([]types.GitPullRequest, error) {
 	client, err := g.getApiClient()
 	if err != nil {
 		return nil, err
@@ -149,7 +149,7 @@ func (g *GiteaGitProvider) GetRepoPRs(repo types.GitRepository, namespaceId stri
 		namespaceId = user.Username
 	}
 
-	prList, _, err := client.ListRepoPullRequests(namespaceId, repo.Name, gitea.ListPullRequestsOptions{
+	prList, _, err := client.ListRepoPullRequests(namespaceId, repositoryId, gitea.ListPullRequestsOptions{
 		ListOptions: gitea.ListOptions{
 			Page:     1,
 			PageSize: 100,

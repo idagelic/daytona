@@ -6,31 +6,12 @@ package gitprovider
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/daytonaio/daytona/pkg/server/config"
 	"github.com/daytonaio/daytona/pkg/types"
 	"github.com/gin-gonic/gin"
 )
-
-// ListGitProviders		godoc
-//
-//	@Tags			gitProvider
-//	@Summary		List git providers
-//	@Description	List git providers
-//	@Produce		json
-//	@Success		200	{array}	types.GitProvider
-//	@Router			/gitprovider [get]
-//
-//	@id				ListGitProviders
-func ListGitProviders(ctx *gin.Context) {
-	c, err := config.GetConfig()
-	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, fmt.Errorf("failed to get config: %s", err.Error()))
-		return
-	}
-
-	ctx.JSON(200, c.GitProviders)
-}
 
 // GetGitProvider 			godoc
 //
@@ -62,6 +43,41 @@ func GetGitProvider(ctx *gin.Context) {
 	}
 
 	ctx.JSON(200, gitProvider)
+}
+
+// GetGitProviderForUrl 			godoc
+//
+//	@Tags			gitProvider
+//	@Summary		Get Git provider
+//	@Description	Get Git provider
+//	@Produce		json
+//	@Param			url	path		string	true	"Url"
+//	@Success		200	{object}	types.GitProvider
+//	@Router			/gitprovider/get-by-url/{url} [get]
+//
+//	@id				GetGitProviderForUrl
+func GetGitProviderForUrl(ctx *gin.Context) {
+	var response types.GitProvider
+
+	url := ctx.Param("url")
+
+	c, err := config.GetConfig()
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, fmt.Errorf("failed to get config: %s", err.Error()))
+		return
+	}
+
+	for _, gitProvider := range c.GitProviders {
+		if strings.Contains(url, fmt.Sprintf("%s.", gitProvider.Id)) {
+			response = gitProvider
+		}
+
+		if gitProvider.BaseApiUrl != "" && strings.Contains(url, getHostnameFromUrl(gitProvider.BaseApiUrl)) {
+			response = gitProvider
+		}
+	}
+
+	ctx.JSON(200, response)
 }
 
 // SetGitProvider 			godoc
@@ -146,4 +162,18 @@ func RemoveGitProvider(ctx *gin.Context) {
 	}
 
 	ctx.JSON(200, nil)
+}
+
+func getHostnameFromUrl(url string) string {
+	input := url
+	input = strings.TrimPrefix(input, "https://")
+	input = strings.TrimPrefix(input, "http://")
+	input = strings.TrimPrefix(input, "www.")
+
+	// Remove everything after the first '/'
+	if slashIndex := strings.Index(input, "/"); slashIndex != -1 {
+		input = input[:slashIndex]
+	}
+
+	return input
 }

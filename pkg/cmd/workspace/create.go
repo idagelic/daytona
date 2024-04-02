@@ -17,6 +17,7 @@ import (
 	"github.com/daytonaio/daytona/internal/util"
 	"github.com/daytonaio/daytona/internal/util/apiclient"
 	"github.com/daytonaio/daytona/internal/util/apiclient/server"
+	workspace_util "github.com/daytonaio/daytona/pkg/cmd/workspace/util"
 	"github.com/daytonaio/daytona/pkg/serverapiclient"
 	"github.com/daytonaio/daytona/pkg/views/target"
 	view_util "github.com/daytonaio/daytona/pkg/views/util"
@@ -228,7 +229,7 @@ func processPrompting(cmd *cobra.Command, apiClient *serverapiclient.APIClient, 
 		workspaceNames = append(workspaceNames, *workspaceInfo.Name)
 	}
 
-	*workspaceName, *repos, err = GetCreationDataFromPrompt(workspaceNames, serverConfig.GitProviders, manual, multiProjectFlag)
+	*workspaceName, *repos, err = workspace_util.GetCreationDataFromPrompt(workspaceNames, serverConfig.GitProviders, manual, multiProjectFlag)
 	if err != nil {
 		log.Fatal(err)
 		return
