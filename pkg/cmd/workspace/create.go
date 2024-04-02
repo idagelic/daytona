@@ -41,7 +41,7 @@ var CreateCmd = &cobra.Command{
 	Args:  cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-		var repos []serverapiclient.Repository
+		var repos []serverapiclient.GitRepository
 		var workspaceName string
 
 		apiClient, err := server.GetApiClient(nil)
@@ -197,7 +197,7 @@ func getTarget(activeProfileName string) (*serverapiclient.ProviderTarget, error
 	return target.GetTargetFromPrompt(targets, activeProfileName, false)
 }
 
-func processPrompting(cmd *cobra.Command, apiClient *serverapiclient.APIClient, workspaceName *string, repos *[]serverapiclient.Repository, ctx context.Context) {
+func processPrompting(cmd *cobra.Command, apiClient *serverapiclient.APIClient, workspaceName *string, repos *[]serverapiclient.GitRepository, ctx context.Context) {
 	manual, err := cmd.Flags().GetBool("manual")
 	if err != nil {
 		log.Fatal(err)
@@ -238,7 +238,7 @@ func processPrompting(cmd *cobra.Command, apiClient *serverapiclient.APIClient, 
 	}
 }
 
-func processCmdArguments(cmd *cobra.Command, args []string, apiClient *serverapiclient.APIClient, workspaceName *string, repos *[]serverapiclient.Repository, ctx context.Context) {
+func processCmdArguments(cmd *cobra.Command, args []string, apiClient *serverapiclient.APIClient, workspaceName *string, repos *[]serverapiclient.GitRepository, ctx context.Context) {
 	var repoUrls []string
 
 	validatedWorkspaceName, err := util.GetValidatedWorkspaceName(args[0])
@@ -265,7 +265,7 @@ func processCmdArguments(cmd *cobra.Command, args []string, apiClient *serverapi
 			log.Fatal(apiclient.HandleErrorResponse(res, err))
 		}
 
-		repo := &serverapiclient.Repository{
+		repo := &serverapiclient.GitRepository{
 			Url: repoResponse.Url,
 		}
 
@@ -330,16 +330,16 @@ func cleanUpTerminal(statusProgram *tea.Program, err error) {
 	}
 }
 
-func GetCreationDataFromPrompt(workspaceNames []string, userGitProviders []serverapiclient.GitProvider, manual bool, multiProject bool) (workspaceName string, projectRepositoryList []serverapiclient.Repository, err error) {
-	var projectRepoList []serverapiclient.Repository
-	var providerRepo serverapiclient.Repository
+func GetCreationDataFromPrompt(workspaceNames []string, userGitProviders []serverapiclient.GitProvider, manual bool, multiProject bool) (workspaceName string, projectRepositoryList []serverapiclient.GitRepository, err error) {
+	var projectRepoList []serverapiclient.GitRepository
+	var providerRepo serverapiclient.GitRepository
 
 	if !manual && userGitProviders != nil && len(userGitProviders) > 0 {
 		providerRepo, err = GetRepositoryFromWizard(userGitProviders, 0)
 		if err != nil {
 			return "", nil, err
 		}
-		if providerRepo == (serverapiclient.Repository{}) {
+		if providerRepo == (serverapiclient.GitRepository{}) {
 			return "", nil, nil
 		}
 	}
@@ -349,11 +349,11 @@ func GetCreationDataFromPrompt(workspaceNames []string, userGitProviders []serve
 		return "", nil, err
 	}
 
-	if workspaceCreationPromptResponse.PrimaryRepository == (serverapiclient.Repository{}) {
+	if workspaceCreationPromptResponse.PrimaryRepository == (serverapiclient.GitRepository{}) {
 		return "", nil, errors.New("primary repository is required")
 	}
 
-	projectRepoList = []serverapiclient.Repository{workspaceCreationPromptResponse.PrimaryRepository}
+	projectRepoList = []serverapiclient.GitRepository{workspaceCreationPromptResponse.PrimaryRepository}
 
 	if workspaceCreationPromptResponse.SecondaryProjectCount > 0 {
 
@@ -363,7 +363,7 @@ func GetCreationDataFromPrompt(workspaceNames []string, userGitProviders []serve
 				if err != nil {
 					return "", nil, err
 				}
-				if providerRepo == (serverapiclient.Repository{}) {
+				if providerRepo == (serverapiclient.GitRepository{}) {
 					return "", nil, nil
 				}
 				workspaceCreationPromptResponse.SecondaryRepositories = append(workspaceCreationPromptResponse.SecondaryRepositories, providerRepo)
@@ -392,7 +392,7 @@ func GetCreationDataFromPrompt(workspaceNames []string, userGitProviders []serve
 	return workspaceCreationPromptResponse.WorkspaceName, projectRepoList, nil
 }
 
-func GetRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, secondaryProjectOrder int) (serverapiclient.Repository, error) {
+func GetRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, secondaryProjectOrder int) (serverapiclient.GitRepository, error) {
 	var providerId string
 	var namespaceId string
 	var branchName string
@@ -416,11 +416,11 @@ func GetRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, sec
 	}
 	providerId = selection.GetProviderIdFromPrompt(gitProviderViewList, secondaryProjectOrder)
 	if providerId == "" {
-		return serverapiclient.Repository{}, nil
+		return serverapiclient.GitRepository{}, nil
 	}
 
 	if providerId == selection.CustomRepoIdentifier {
-		return serverapiclient.Repository{
+		return serverapiclient.GitRepository{
 			Id: &selection.CustomRepoIdentifier,
 		}, nil
 	}
@@ -434,7 +434,7 @@ func GetRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, sec
 
 	namespaceList, _, err := apiClient.GitProviderAPI.GetNamespaces(ctx, providerId).Execute()
 	if err != nil {
-		return serverapiclient.Repository{}, err
+		return serverapiclient.GitRepository{}, err
 	}
 
 	if len(namespaceList) == 1 {
@@ -442,18 +442,18 @@ func GetRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, sec
 	} else {
 		namespaceId = selection.GetNamespaceIdFromPrompt(namespaceList, secondaryProjectOrder)
 		if namespaceId == "" {
-			return serverapiclient.Repository{}, errors.New("namespace not found")
+			return serverapiclient.GitRepository{}, errors.New("namespace not found")
 		}
 	}
 
 	providerRepos, _, err := apiClient.GitProviderAPI.GetRepositories(ctx, providerId, namespaceId).Execute()
 	if err != nil {
-		return serverapiclient.Repository{}, err
+		return serverapiclient.GitRepository{}, err
 	}
 
 	chosenRepo := selection.GetRepositoryFromPrompt(providerRepos, secondaryProjectOrder)
-	if chosenRepo == (serverapiclient.Repository{}) {
-		return serverapiclient.Repository{}, nil
+	if chosenRepo == (serverapiclient.GitRepository{}) {
+		return serverapiclient.GitRepository{}, nil
 	}
 
 	req := serverapiclient.GetRepoArtifactsRequest{
@@ -464,11 +464,11 @@ func GetRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, sec
 
 	branchList, _, err := apiClient.GitProviderAPI.GetRepoBranches(ctx).Artifacts(req).Execute()
 	if err != nil {
-		return serverapiclient.Repository{}, err
+		return serverapiclient.GitRepository{}, err
 	}
 
 	if len(branchList) == 0 {
-		return serverapiclient.Repository{}, errors.New("no branches found")
+		return serverapiclient.GitRepository{}, errors.New("no branches found")
 	}
 
 	if len(branchList) == 1 {
@@ -484,12 +484,12 @@ func GetRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, sec
 
 	prList, _, err := apiClient.GitProviderAPI.GetRepoPRs(ctx).Artifacts(req).Execute()
 	if err != nil {
-		return serverapiclient.Repository{}, err
+		return serverapiclient.GitRepository{}, err
 	}
 	if len(prList) == 0 {
 		branchName = selection.GetBranchNameFromPrompt(branchList, secondaryProjectOrder)
 		if branchName == "" {
-			return serverapiclient.Repository{}, nil
+			return serverapiclient.GitRepository{}, nil
 		}
 		chosenRepo.Branch = &branchName
 
@@ -508,13 +508,13 @@ func GetRepositoryFromWizard(userGitProviders []serverapiclient.GitProvider, sec
 	if chosenCheckoutOption == selection.CheckoutBranch {
 		branchName = selection.GetBranchNameFromPrompt(branchList, secondaryProjectOrder)
 		if branchName == "" {
-			return serverapiclient.Repository{}, nil
+			return serverapiclient.GitRepository{}, nil
 		}
 		chosenRepo.Branch = &branchName
 	} else if chosenCheckoutOption == selection.CheckoutPR {
 		chosenPullRequest := selection.GetPullRequestFromPrompt(prList, secondaryProjectOrder)
 		if *chosenPullRequest.Branch == "" {
-			return serverapiclient.Repository{}, nil
+			return serverapiclient.GitRepository{}, nil
 		}
 
 		chosenRepo.Branch = chosenPullRequest.Branch

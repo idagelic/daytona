@@ -87,7 +87,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/Repository"
+                            "$ref": "#/definitions/GitRepository"
                         }
                     }
                 }
@@ -346,7 +346,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/Repository"
+                                "$ref": "#/definitions/GitRepository"
                             }
                         }
                     }
@@ -842,7 +842,7 @@
                 "repositories": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/Repository"
+                        "$ref": "#/definitions/GitRepository"
                     }
                 },
                 "target": {
@@ -874,7 +874,7 @@
                     "type": "string"
                 },
                 "repository": {
-                    "$ref": "#/definitions/Repository"
+                    "$ref": "#/definitions/GitRepository"
                 }
             }
         },
@@ -928,6 +928,38 @@
                 }
             }
         },
+        "GitRepository": {
+            "type": "object",
+            "properties": {
+                "branch": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "prNumber": {
+                    "type": "integer"
+                },
+                "sha": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "GitUser": {
             "type": "object",
             "properties": {
@@ -974,7 +1006,7 @@
                     "type": "string"
                 },
                 "repository": {
-                    "$ref": "#/definitions/Repository"
+                    "$ref": "#/definitions/GitRepository"
                 },
                 "target": {
                     "type": "string"
@@ -1040,38 +1072,6 @@
             "type": "object",
             "additionalProperties": {
                 "$ref": "#/definitions/provider.ProviderTargetProperty"
-            }
-        },
-        "Repository": {
-            "type": "object",
-            "properties": {
-                "branch": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "prNumber": {
-                    "type": "integer"
-                },
-                "sha": {
-                    "type": "string"
-                },
-                "source": {
-                    "type": "string"
-                },
-                "url": {
-                    "type": "string"
-                }
             }
         },
         "ServerConfig": {

@@ -5,7 +5,7 @@ import (
 )
 
 type GetRepoArtifactsRequest struct {
-	Repository    types.Repository
+	Repository    types.GitRepository
 	GitProviderId string
 	NamespaceId   string
 } //	@name	GetRepoArtifactsRequest

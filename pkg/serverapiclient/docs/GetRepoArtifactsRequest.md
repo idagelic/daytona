@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **GitProviderId** | Pointer to **string** |  | [optional] 
 **NamespaceId** | Pointer to **string** |  | [optional] 
-**Repository** | Pointer to [**Repository**](Repository.md) |  | [optional] 
+**Repository** | Pointer to [**GitRepository**](GitRepository.md) |  | [optional] 
 
 ## Methods
 
@@ -79,20 +79,20 @@ HasNamespaceId returns a boolean if a field has been set.
 
 ### GetRepository
 
-`func (o *GetRepoArtifactsRequest) GetRepository() Repository`
+`func (o *GetRepoArtifactsRequest) GetRepository() GitRepository`
 
 GetRepository returns the Repository field if non-nil, zero value otherwise.
 
 ### GetRepositoryOk
 
-`func (o *GetRepoArtifactsRequest) GetRepositoryOk() (*Repository, bool)`
+`func (o *GetRepoArtifactsRequest) GetRepositoryOk() (*GitRepository, bool)`
 
 GetRepositoryOk returns a tuple with the Repository field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetRepository
 
-`func (o *GetRepoArtifactsRequest) SetRepository(v Repository)`
+`func (o *GetRepoArtifactsRequest) SetRepository(v GitRepository)`
 
 SetRepository sets Repository field to given value.
 

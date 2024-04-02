@@ -20,7 +20,7 @@ import (
 //	@Param			gitProviderId	path	string	true	"Git provider"
 //	@Param			namespaceId		path	string	true	"Namespace"
 //	@Produce		json
-//	@Success		200	{array}	Repository
+//	@Success		200	{array}	GitRepository
 //	@Router			/gitprovider/{gitProviderId}/{namespaceId}/repositories [get]
 //
 //	@id				GetRepositories

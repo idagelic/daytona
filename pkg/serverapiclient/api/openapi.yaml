@@ -57,7 +57,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Repository'
+                $ref: '#/components/schemas/GitRepository'
           description: OK
       summary: Get Git context
       tags:
@@ -237,7 +237,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/Repository'
+                  $ref: '#/components/schemas/GitRepository'
                 type: array
           description: OK
       summary: Get Git repositories
@@ -613,7 +613,7 @@ components:
           type: string
         repositories:
           items:
-            $ref: '#/components/schemas/Repository'
+            $ref: '#/components/schemas/GitRepository'
           type: array
         target:
           type: string
@@ -651,7 +651,7 @@ components:
         namespaceId:
           type: string
         repository:
-          $ref: '#/components/schemas/Repository'
+          $ref: '#/components/schemas/GitRepository'
       type: object
     GitBranch:
       example:
@@ -697,6 +697,37 @@ components:
         branch:
           type: string
         name:
+          type: string
+      type: object
+    GitRepository:
+      example:
+        owner: owner
+        path: path
+        name: name
+        id: id
+        source: source
+        prNumber: 0
+        branch: branch
+        sha: sha
+        url: url
+      properties:
+        branch:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        owner:
+          type: string
+        path:
+          type: string
+        prNumber:
+          type: integer
+        sha:
+          type: string
+        source:
+          type: string
+        url:
           type: string
       type: object
     GitUser:
@@ -754,7 +785,7 @@ components:
         name:
           type: string
         repository:
-          $ref: '#/components/schemas/Repository'
+          $ref: '#/components/schemas/GitRepository'
         target:
           type: string
         workspaceId:
@@ -814,37 +845,6 @@ components:
     ProviderTargetManifest:
       additionalProperties:
         $ref: '#/components/schemas/provider.ProviderTargetProperty'
-      type: object
-    Repository:
-      example:
-        owner: owner
-        path: path
-        name: name
-        id: id
-        source: source
-        prNumber: 0
-        branch: branch
-        sha: sha
-        url: url
-      properties:
-        branch:
-          type: string
-        id:
-          type: string
-        name:
-          type: string
-        owner:
-          type: string
-        path:
-          type: string
-        prNumber:
-          type: integer
-        sha:
-          type: string
-        source:
-          type: string
-        url:
-          type: string
       type: object
     ServerConfig:
       example:

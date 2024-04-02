@@ -29,7 +29,7 @@ type ApiGetGitContextRequest struct {
 	gitUrl string
 }
 
-func (r ApiGetGitContextRequest) Execute() (*Repository, *http.Response, error) {
+func (r ApiGetGitContextRequest) Execute() (*GitRepository, *http.Response, error) {
 	return r.ApiService.GetGitContextExecute(r)
 }
 
@@ -51,13 +51,13 @@ func (a *GitProviderAPIService) GetGitContext(ctx context.Context, gitUrl string
 }
 
 // Execute executes the request
-//  @return Repository
-func (a *GitProviderAPIService) GetGitContextExecute(r ApiGetGitContextRequest) (*Repository, *http.Response, error) {
+//  @return GitRepository
+func (a *GitProviderAPIService) GetGitContextExecute(r ApiGetGitContextRequest) (*GitRepository, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *Repository
+		localVarReturnValue  *GitRepository
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GitProviderAPIService.GetGitContext")
@@ -775,7 +775,7 @@ type ApiGetRepositoriesRequest struct {
 	namespaceId string
 }
 
-func (r ApiGetRepositoriesRequest) Execute() ([]Repository, *http.Response, error) {
+func (r ApiGetRepositoriesRequest) Execute() ([]GitRepository, *http.Response, error) {
 	return r.ApiService.GetRepositoriesExecute(r)
 }
 
@@ -799,13 +799,13 @@ func (a *GitProviderAPIService) GetRepositories(ctx context.Context, gitProvider
 }
 
 // Execute executes the request
-//  @return []Repository
-func (a *GitProviderAPIService) GetRepositoriesExecute(r ApiGetRepositoriesRequest) ([]Repository, *http.Response, error) {
+//  @return []GitRepository
+func (a *GitProviderAPIService) GetRepositoriesExecute(r ApiGetRepositoriesRequest) ([]GitRepository, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  []Repository
+		localVarReturnValue  []GitRepository
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GitProviderAPIService.GetRepositories")

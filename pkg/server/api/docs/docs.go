@@ -90,7 +90,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/Repository"
+                            "$ref": "#/definitions/GitRepository"
                         }
                     }
                 }
@@ -349,7 +349,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/Repository"
+                                "$ref": "#/definitions/GitRepository"
                             }
                         }
                     }
@@ -845,7 +845,7 @@ const docTemplate = `{
                 "repositories": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/Repository"
+                        "$ref": "#/definitions/GitRepository"
                     }
                 },
                 "target": {
@@ -877,7 +877,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "repository": {
-                    "$ref": "#/definitions/Repository"
+                    "$ref": "#/definitions/GitRepository"
                 }
             }
         },
@@ -931,6 +931,38 @@ const docTemplate = `{
                 }
             }
         },
+        "GitRepository": {
+            "type": "object",
+            "properties": {
+                "branch": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "prNumber": {
+                    "type": "integer"
+                },
+                "sha": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "GitUser": {
             "type": "object",
             "properties": {
@@ -977,7 +1009,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "repository": {
-                    "$ref": "#/definitions/Repository"
+                    "$ref": "#/definitions/GitRepository"
                 },
                 "target": {
                     "type": "string"
@@ -1043,38 +1075,6 @@ const docTemplate = `{
             "type": "object",
             "additionalProperties": {
                 "$ref": "#/definitions/provider.ProviderTargetProperty"
-            }
-        },
-        "Repository": {
-            "type": "object",
-            "properties": {
-                "branch": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "prNumber": {
-                    "type": "integer"
-                },
-                "sha": {
-                    "type": "string"
-                },
-                "source": {
-                    "type": "string"
-                },
-                "url": {
-                    "type": "string"
-                }
             }
         },
         "ServerConfig": {

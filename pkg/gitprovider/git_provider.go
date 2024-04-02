@@ -16,11 +16,11 @@ const personalNamespaceId = "<PERSONAL>"
 
 type GitProvider interface {
 	GetNamespaces() ([]types.GitNamespace, error)
-	GetRepositories(namespace string) ([]types.Repository, error)
+	GetRepositories(namespace string) ([]types.GitRepository, error)
 	GetUser() (types.GitUser, error)
-	GetRepoBranches(types.Repository, string) ([]types.GitBranch, error)
-	GetRepoPRs(types.Repository, string) ([]types.GitPullRequest, error)
-	// ParseGitUrl(string) (*types.Repository, error)
+	GetRepoBranches(types.GitRepository, string) ([]types.GitBranch, error)
+	GetRepoPRs(types.GitRepository, string) ([]types.GitPullRequest, error)
+	// ParseGitUrl(string) (*types.GitRepository, error)
 }
 
 func GetGitProvider(providerId string, gitProviders []types.GitProvider) GitProvider {
