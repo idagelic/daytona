@@ -41,8 +41,8 @@ func GetIdeList() []Ide {
 	return ides
 }
 
-func GetSupportedGitProviders() []SupportedGitProvider {
-	return []SupportedGitProvider{
+func GetSupportedGitProviders() []GitProvider {
+	return []GitProvider{
 		{"github", "GitHub"},
 		{"gitlab", "GitLab"},
 		{"gitlab-self-managed", "GitLab Self-managed"},

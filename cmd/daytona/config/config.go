@@ -41,7 +41,7 @@ type Ide struct {
 	Name string
 }
 
-type SupportedGitProvider struct {
+type GitProvider struct {
 	Id   string
 	Name string
 }
