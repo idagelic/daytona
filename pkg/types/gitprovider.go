@@ -17,7 +17,7 @@ type GitUser struct {
 	Email    string `json:"email"`
 } // @name GitUser
 
-type Repository struct {
+type GitRepository struct {
 	Id       string   `json:"id,omitempty"`
 	Url      string   `json:"url"`
 	Name     string   `json:"name"`
@@ -28,7 +28,7 @@ type Repository struct {
 	Source   string   `json:"source"`
 	Path     string   `json:"path,omitempty"`
 	GitUser  *GitUser `json:"-"`
-} // @name Repository
+} // @name GitRepository
 
 type GitNamespace struct {
 	Id   string `json:"id"`

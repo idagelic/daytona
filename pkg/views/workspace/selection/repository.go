@@ -14,7 +14,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func selectRepositoryPrompt(repositories []serverapiclient.Repository, secondaryProjectOrder int, choiceChan chan<- string) {
+func selectRepositoryPrompt(repositories []serverapiclient.GitRepository, secondaryProjectOrder int, choiceChan chan<- string) {
 	items := []list.Item{}
 
 	// Populate items with titles and descriptions from workspaces.
@@ -43,7 +43,7 @@ func selectRepositoryPrompt(repositories []serverapiclient.Repository, secondary
 	}
 }
 
-func GetRepositoryFromPrompt(repositories []serverapiclient.Repository, secondaryProjectOrder int) serverapiclient.Repository {
+func GetRepositoryFromPrompt(repositories []serverapiclient.GitRepository, secondaryProjectOrder int) serverapiclient.GitRepository {
 	choiceChan := make(chan string)
 
 	go selectRepositoryPrompt(repositories, secondaryProjectOrder, choiceChan)
@@ -56,5 +56,5 @@ func GetRepositoryFromPrompt(repositories []serverapiclient.Repository, secondar
 		}
 	}
 
-	return serverapiclient.Repository{}
+	return serverapiclient.GitRepository{}
 }

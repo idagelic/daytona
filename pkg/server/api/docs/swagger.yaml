@@ -6,7 +6,7 @@ definitions:
         type: string
       repositories:
         items:
-          $ref: '#/definitions/Repository'
+          $ref: '#/definitions/GitRepository'
         type: array
       target:
         type: string
@@ -27,7 +27,7 @@ definitions:
       namespaceId:
         type: string
       repository:
-        $ref: '#/definitions/Repository'
+        $ref: '#/definitions/GitRepository'
     type: object
   GitBranch:
     properties:
@@ -61,6 +61,27 @@ definitions:
       name:
         type: string
     type: object
+  GitRepository:
+    properties:
+      branch:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      path:
+        type: string
+      prNumber:
+        type: integer
+      sha:
+        type: string
+      source:
+        type: string
+      url:
+        type: string
+    type: object
   GitUser:
     properties:
       email:
@@ -91,7 +112,7 @@ definitions:
       name:
         type: string
       repository:
-        $ref: '#/definitions/Repository'
+        $ref: '#/definitions/GitRepository'
       target:
         type: string
       workspaceId:
@@ -134,27 +155,6 @@ definitions:
   ProviderTargetManifest:
     additionalProperties:
       $ref: '#/definitions/provider.ProviderTargetProperty'
-    type: object
-  Repository:
-    properties:
-      branch:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      owner:
-        type: string
-      path:
-        type: string
-      prNumber:
-        type: integer
-      sha:
-        type: string
-      source:
-        type: string
-      url:
-        type: string
     type: object
   ServerConfig:
     properties:
@@ -369,7 +369,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/Repository'
+              $ref: '#/definitions/GitRepository'
             type: array
       summary: Get Git repositories
       tags:
@@ -432,7 +432,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/Repository'
+            $ref: '#/definitions/GitRepository'
       summary: Get Git context
       tags:
       - gitProvider

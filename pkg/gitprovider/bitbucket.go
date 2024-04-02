@@ -55,9 +55,9 @@ func (g *BitbucketGitProvider) GetNamespaces() ([]types.GitNamespace, error) {
 	return namespaces, nil
 }
 
-func (g *BitbucketGitProvider) GetRepositories(namespace string) ([]types.Repository, error) {
+func (g *BitbucketGitProvider) GetRepositories(namespace string) ([]types.GitRepository, error) {
 	client := g.getApiClient()
-	var response []types.Repository
+	var response []types.GitRepository
 
 	if namespace == personalNamespaceId {
 		user, err := g.GetUser()
@@ -82,7 +82,7 @@ func (g *BitbucketGitProvider) GetRepositories(namespace string) ([]types.Reposi
 			log.Fatal("Invalid HTML link")
 		}
 
-		response = append(response, types.Repository{
+		response = append(response, types.GitRepository{
 			Name: repo.Name,
 			Url:  htmlLink["href"].(string),
 		})
@@ -91,7 +91,7 @@ func (g *BitbucketGitProvider) GetRepositories(namespace string) ([]types.Reposi
 	return response, err
 }
 
-func (g *BitbucketGitProvider) GetRepoBranches(repo types.Repository, namespaceId string) ([]types.GitBranch, error) {
+func (g *BitbucketGitProvider) GetRepoBranches(repo types.GitRepository, namespaceId string) ([]types.GitBranch, error) {
 	client := g.getApiClient()
 	var response []types.GitBranch
 
@@ -152,7 +152,7 @@ func (g *BitbucketGitProvider) GetRepoBranches(repo types.Repository, namespaceI
 	return response, nil
 }
 
-func (g *BitbucketGitProvider) GetRepoPRs(repo types.Repository, namespaceId string) ([]types.GitPullRequest, error) {
+func (g *BitbucketGitProvider) GetRepoPRs(repo types.GitRepository, namespaceId string) ([]types.GitPullRequest, error) {
 	client := g.getApiClient()
 	var response []types.GitPullRequest
 

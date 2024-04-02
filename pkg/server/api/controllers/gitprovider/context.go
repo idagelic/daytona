@@ -19,7 +19,7 @@ import (
 //	@Description	Get Git context
 //	@Produce		json
 //	@Param			gitUrl	path		string	true	"Git URL"
-//	@Success		200		{object}	Repository
+//	@Success		200		{object}	GitRepository
 //	@Router			/gitprovider/context/{gitUrl} [get]
 //
 //	@id				GetGitContext
@@ -33,7 +33,7 @@ func GetGitContext(ctx *gin.Context) {
 		return
 	}
 
-	repo := &types.Repository{}
+	repo := &types.GitRepository{}
 	repo.Url = decodedURLParam
 
 	ctx.JSON(200, repo)

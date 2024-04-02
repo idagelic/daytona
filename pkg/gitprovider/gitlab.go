@@ -39,9 +39,9 @@ func (g *GitLabGitProvider) GetNamespaces() ([]types.GitNamespace, error) {
 	return namespaces, nil
 }
 
-func (g *GitLabGitProvider) GetRepositories(namespace string) ([]types.Repository, error) {
+func (g *GitLabGitProvider) GetRepositories(namespace string) ([]types.GitRepository, error) {
 	client := g.getApiClient()
-	var response []types.Repository
+	var response []types.GitRepository
 	var repoList []*gitlab.Project
 	var err error
 
@@ -73,7 +73,7 @@ func (g *GitLabGitProvider) GetRepositories(namespace string) ([]types.Repositor
 	}
 
 	for _, repo := range repoList {
-		response = append(response, types.Repository{
+		response = append(response, types.GitRepository{
 			Id:   strconv.Itoa(repo.ID),
 			Name: repo.Name,
 			Url:  repo.WebURL,
@@ -83,7 +83,7 @@ func (g *GitLabGitProvider) GetRepositories(namespace string) ([]types.Repositor
 	return response, err
 }
 
-func (g *GitLabGitProvider) GetRepoBranches(repo types.Repository, namespaceId string) ([]types.GitBranch, error) {
+func (g *GitLabGitProvider) GetRepoBranches(repo types.GitRepository, namespaceId string) ([]types.GitBranch, error) {
 	client := g.getApiClient()
 	var response []types.GitBranch
 
@@ -105,7 +105,7 @@ func (g *GitLabGitProvider) GetRepoBranches(repo types.Repository, namespaceId s
 	return response, nil
 }
 
-func (g *GitLabGitProvider) GetRepoPRs(repo types.Repository, namespaceId string) ([]types.GitPullRequest, error) {
+func (g *GitLabGitProvider) GetRepoPRs(repo types.GitRepository, namespaceId string) ([]types.GitPullRequest, error) {
 	client := g.getApiClient()
 	var response []types.GitPullRequest
 

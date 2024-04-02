@@ -33,8 +33,8 @@ type Styles struct {
 
 type WorkspaceCreationPromptResponse struct {
 	WorkspaceName         string
-	PrimaryRepository     serverapiclient.Repository
-	SecondaryRepositories []serverapiclient.Repository
+	PrimaryRepository     serverapiclient.GitRepository
+	SecondaryRepositories []serverapiclient.GitRepository
 	SecondaryProjectCount int
 }
 
@@ -71,7 +71,7 @@ type Model struct {
 	workspaceCreationPromptResponse WorkspaceCreationPromptResponse
 }
 
-func RunInitialForm(providerRepo serverapiclient.Repository, multiProject bool) (WorkspaceCreationPromptResponse, error) {
+func RunInitialForm(providerRepo serverapiclient.GitRepository, multiProject bool) (WorkspaceCreationPromptResponse, error) {
 	m := Model{width: maxWidth}
 	m.lg = lipgloss.DefaultRenderer()
 	m.styles = NewStyles(m.lg)
@@ -148,7 +148,7 @@ func RunSecondaryProjectsForm(workspaceCreationPromptResponse WorkspaceCreationP
 	m.lg = lipgloss.DefaultRenderer()
 	m.styles = NewStyles(m.lg)
 
-	var secondaryRepoList []serverapiclient.Repository
+	var secondaryRepoList []serverapiclient.GitRepository
 	count := workspaceCreationPromptResponse.SecondaryProjectCount
 
 	secondaryRepoList = workspaceCreationPromptResponse.SecondaryRepositories
@@ -156,7 +156,7 @@ func RunSecondaryProjectsForm(workspaceCreationPromptResponse WorkspaceCreationP
 	// Add empty strings to the slice
 	for i := 0; i < (count - len(workspaceCreationPromptResponse.SecondaryRepositories)); i++ {
 		emptyString := ""
-		secondaryRepoList = append(secondaryRepoList, serverapiclient.Repository{
+		secondaryRepoList = append(secondaryRepoList, serverapiclient.GitRepository{
 			Url: &emptyString,
 		})
 	}

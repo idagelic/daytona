@@ -31,7 +31,7 @@ func ToProjectDTO(project *types.Project, workspace *types.Workspace) ProjectDTO
 	}
 }
 
-func ToRepositoryDTO(repo *types.Repository) RepositoryDTO {
+func ToRepositoryDTO(repo *types.GitRepository) RepositoryDTO {
 	repoDTO := RepositoryDTO{
 		Url: repo.Url,
 	}
@@ -67,8 +67,8 @@ func ToProject(projectDTO ProjectDTO) *types.Project {
 	}
 }
 
-func ToRepository(repoDTO RepositoryDTO) *types.Repository {
-	repo := types.Repository{
+func ToRepository(repoDTO RepositoryDTO) *types.GitRepository {
+	repo := types.GitRepository{
 		Url: repoDTO.Url,
 	}
 

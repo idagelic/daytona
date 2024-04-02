@@ -5,7 +5,7 @@ package types
 
 type Project struct {
 	Name        string            `json:"name"`
-	Repository  *Repository       `json:"repository"`
+	Repository  *GitRepository    `json:"repository"`
 	WorkspaceId string            `json:"workspaceId"`
 	ApiKey      string            `json:"-"`
 	Target      string            `json:"target"`

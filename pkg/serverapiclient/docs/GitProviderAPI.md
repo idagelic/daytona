@@ -20,7 +20,7 @@ Method | HTTP request | Description
 
 ## GetGitContext
 
-> Repository GetGitContext(ctx, gitUrl).Execute()
+> GitRepository GetGitContext(ctx, gitUrl).Execute()
 
 Get Git context
 
@@ -48,7 +48,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error when calling `GitProviderAPI.GetGitContext``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `GetGitContext`: Repository
+	// response from `GetGitContext`: GitRepository
 	fmt.Fprintf(os.Stdout, "Response from `GitProviderAPI.GetGitContext`: %v\n", resp)
 }
 ```
@@ -72,7 +72,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Repository**](Repository.md)
+[**GitRepository**](GitRepository.md)
 
 ### Authorization
 
@@ -498,7 +498,7 @@ No authorization required
 
 ## GetRepositories
 
-> []Repository GetRepositories(ctx, gitProviderId, namespaceId).Execute()
+> []GitRepository GetRepositories(ctx, gitProviderId, namespaceId).Execute()
 
 Get Git repositories
 
@@ -527,7 +527,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error when calling `GitProviderAPI.GetRepositories``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `GetRepositories`: []Repository
+	// response from `GetRepositories`: []GitRepository
 	fmt.Fprintf(os.Stdout, "Response from `GitProviderAPI.GetRepositories`: %v\n", resp)
 }
 ```
@@ -553,7 +553,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**[]Repository**](Repository.md)
+[**[]GitRepository**](GitRepository.md)
 
 ### Authorization
 

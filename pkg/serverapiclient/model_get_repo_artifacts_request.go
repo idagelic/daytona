@@ -21,7 +21,7 @@ var _ MappedNullable = &GetRepoArtifactsRequest{}
 type GetRepoArtifactsRequest struct {
 	GitProviderId *string `json:"gitProviderId,omitempty"`
 	NamespaceId *string `json:"namespaceId,omitempty"`
-	Repository *Repository `json:"repository,omitempty"`
+	Repository *GitRepository `json:"repository,omitempty"`
 }
 
 // NewGetRepoArtifactsRequest instantiates a new GetRepoArtifactsRequest object
@@ -106,9 +106,9 @@ func (o *GetRepoArtifactsRequest) SetNamespaceId(v string) {
 }
 
 // GetRepository returns the Repository field value if set, zero value otherwise.
-func (o *GetRepoArtifactsRequest) GetRepository() Repository {
+func (o *GetRepoArtifactsRequest) GetRepository() GitRepository {
 	if o == nil || IsNil(o.Repository) {
-		var ret Repository
+		var ret GitRepository
 		return ret
 	}
 	return *o.Repository
@@ -116,7 +116,7 @@ func (o *GetRepoArtifactsRequest) GetRepository() Repository {
 
 // GetRepositoryOk returns a tuple with the Repository field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *GetRepoArtifactsRequest) GetRepositoryOk() (*Repository, bool) {
+func (o *GetRepoArtifactsRequest) GetRepositoryOk() (*GitRepository, bool) {
 	if o == nil || IsNil(o.Repository) {
 		return nil, false
 	}
@@ -132,8 +132,8 @@ func (o *GetRepoArtifactsRequest) HasRepository() bool {
 	return false
 }
 
-// SetRepository gets a reference to the given Repository and assigns it to the Repository field.
-func (o *GetRepoArtifactsRequest) SetRepository(v Repository) {
+// SetRepository gets a reference to the given GitRepository and assigns it to the Repository field.
+func (o *GetRepoArtifactsRequest) SetRepository(v GitRepository) {
 	o.Repository = &v
 }
 
