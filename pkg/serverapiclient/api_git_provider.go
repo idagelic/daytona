@@ -169,7 +169,7 @@ func (a *GitProviderAPIService) GetGitProviderForUrlExecute(r ApiGetGitProviderF
 		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/gitprovider/get-by-url/{url}"
+	localVarPath := localBasePath + "/gitprovider/for-url/{url}"
 	localVarPath = strings.Replace(localVarPath, "{"+"url"+"}", url.PathEscape(parameterValueToString(r.url, "url")), -1)
 
 	localVarHeaderParams := make(map[string]string)

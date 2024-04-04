@@ -74,7 +74,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/gitprovider/get-by-url/{url}": {
+        "/gitprovider/for-url/{url}": {
             "get": {
                 "description": "Get Git provider",
                 "produces": [

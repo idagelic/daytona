@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"strings"
 
@@ -38,7 +39,8 @@ var gitCredCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		gitProvider, res, err := apiClient.GitProviderAPI.GetGitProviderForUrl(ctx, host).Execute()
+		encodedUrl := url.QueryEscape(host)
+		gitProvider, res, err := apiClient.GitProviderAPI.GetGitProviderForUrl(ctx, encodedUrl).Execute()
 		if err != nil {
 			log.Fatal(apiclient.HandleErrorResponse(res, err))
 		}

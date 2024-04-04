@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 
 	"github.com/daytonaio/daytona/internal/util/apiclient"
 	"github.com/daytonaio/daytona/internal/util/apiclient/server"
@@ -99,7 +100,8 @@ func (a *Agent) getGitProvider(repoUrl string) (*serverapiclient.GitProvider, er
 		return nil, err
 	}
 
-	gitProvider, res, err := apiClient.GitProviderAPI.GetGitProviderForUrl(ctx, repoUrl).Execute()
+	encodedUrl := url.QueryEscape(repoUrl)
+	gitProvider, res, err := apiClient.GitProviderAPI.GetGitProviderForUrl(ctx, encodedUrl).Execute()
 	if err != nil {
 		return nil, apiclient.HandleErrorResponse(res, err)
 	}

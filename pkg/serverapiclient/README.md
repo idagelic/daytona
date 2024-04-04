@@ -78,7 +78,7 @@ All URIs are relative to *http://localhost:3000*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *GitProviderAPI* | [**GetGitContext**](docs/GitProviderAPI.md#getgitcontext) | **Get** /gitprovider/context/{gitUrl} | Get Git context
-*GitProviderAPI* | [**GetGitProviderForUrl**](docs/GitProviderAPI.md#getgitproviderforurl) | **Get** /gitprovider/get-by-url/{url} | Get Git provider
+*GitProviderAPI* | [**GetGitProviderForUrl**](docs/GitProviderAPI.md#getgitproviderforurl) | **Get** /gitprovider/for-url/{url} | Get Git provider
 *GitProviderAPI* | [**GetGitUser**](docs/GitProviderAPI.md#getgituser) | **Get** /gitprovider/{gitProviderId}/user | Get Git context
 *GitProviderAPI* | [**GetGitUsernameFromToken**](docs/GitProviderAPI.md#getgitusernamefromtoken) | **Get** /gitprovider/username-from-token | Get username from token
 *GitProviderAPI* | [**GetNamespaces**](docs/GitProviderAPI.md#getnamespaces) | **Get** /gitprovider/{gitProviderId}/namespaces | Get Git namespaces

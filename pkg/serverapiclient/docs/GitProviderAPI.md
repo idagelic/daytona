@@ -5,7 +5,7 @@ All URIs are relative to *http://localhost:3000*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**GetGitContext**](GitProviderAPI.md#GetGitContext) | **Get** /gitprovider/context/{gitUrl} | Get Git context
-[**GetGitProviderForUrl**](GitProviderAPI.md#GetGitProviderForUrl) | **Get** /gitprovider/get-by-url/{url} | Get Git provider
+[**GetGitProviderForUrl**](GitProviderAPI.md#GetGitProviderForUrl) | **Get** /gitprovider/for-url/{url} | Get Git provider
 [**GetGitUser**](GitProviderAPI.md#GetGitUser) | **Get** /gitprovider/{gitProviderId}/user | Get Git context
 [**GetGitUsernameFromToken**](GitProviderAPI.md#GetGitUsernameFromToken) | **Get** /gitprovider/username-from-token | Get username from token
 [**GetNamespaces**](GitProviderAPI.md#GetNamespaces) | **Get** /gitprovider/{gitProviderId}/namespaces | Get Git namespaces

@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 
+	"net/url"
+
 	"github.com/daytonaio/daytona/pkg/server/config"
 	"github.com/daytonaio/daytona/pkg/types"
 	"github.com/gin-gonic/gin"
@@ -21,13 +23,19 @@ import (
 //	@Produce		json
 //	@Param			url	path		string	true	"Url"
 //	@Success		200	{object}	types.GitProvider
-//	@Router			/gitprovider/get-by-url/{url} [get]
+//	@Router			/gitprovider/for-url/{url} [get]
 //
 //	@id				GetGitProviderForUrl
 func GetGitProviderForUrl(ctx *gin.Context) {
 	var response types.GitProvider
 
-	url := ctx.Param("url")
+	urlParam := ctx.Param("url")
+
+	decodedUrl, err := url.QueryUnescape(urlParam)
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, fmt.Errorf("failed to decode query param: %s", err.Error()))
+		return
+	}
 
 	c, err := config.GetConfig()
 	if err != nil {
@@ -36,11 +44,11 @@ func GetGitProviderForUrl(ctx *gin.Context) {
 	}
 
 	for _, gitProvider := range c.GitProviders {
-		if strings.Contains(url, fmt.Sprintf("%s.", gitProvider.Id)) {
+		if strings.Contains(decodedUrl, fmt.Sprintf("%s.", gitProvider.Id)) {
 			response = gitProvider
 		}
 
-		if gitProvider.BaseApiUrl != "" && strings.Contains(url, getHostnameFromUrl(gitProvider.BaseApiUrl)) {
+		if gitProvider.BaseApiUrl != "" && strings.Contains(decodedUrl, getHostnameFromUrl(gitProvider.BaseApiUrl)) {
 			response = gitProvider
 		}
 	}
