@@ -119,16 +119,14 @@ func GetServer() (*http.Server, error) {
 
 	gitProviderController := router.Group("/gitprovider")
 	{
-		// gitProviderController.GET("/:gitProviderId", gitprovider.GetGitProvider)
-		gitProviderController.GET("/get-by-url/:url", middlewares.ProjectMiddleware(), gitprovider.GetGitProviderForUrl)
-
+		gitProviderController.GET("/for-url/:url", middlewares.ProjectMiddleware(), gitprovider.GetGitProviderForUrl)
 		gitProviderController.POST("/", gitprovider.SetGitProvider)
 		gitProviderController.DELETE("/:gitProviderId", gitprovider.RemoveGitProvider)
 		gitProviderController.GET("/:gitProviderId/user", gitprovider.GetGitUser)
 		gitProviderController.GET("/:gitProviderId/namespaces", gitprovider.GetNamespaces)
 		gitProviderController.GET("/:gitProviderId/:namespaceId/repositories", gitprovider.GetRepositories)
-		gitProviderController.GET("/:gitProviderId/:namespaceId/:repositoryId", gitprovider.GetRepoBranches)
-		gitProviderController.GET("/:gitProviderId/:namespaceId/:repositoryId", gitprovider.GetRepoPRs)
+		gitProviderController.GET("/:gitProviderId/:namespaceId/:repositoryId/branches", gitprovider.GetRepoBranches)
+		gitProviderController.GET("/:gitProviderId/:namespaceId/:repositoryId/pull-requests", gitprovider.GetRepoPRs)
 		gitProviderController.GET("/context/:gitUrl", gitprovider.GetGitContext)
 		gitProviderController.GET("/username-from-token", gitprovider.GetGitUsernameFromToken)
 	}

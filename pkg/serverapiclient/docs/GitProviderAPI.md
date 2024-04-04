@@ -5,13 +5,12 @@ All URIs are relative to *http://localhost:3000*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**GetGitContext**](GitProviderAPI.md#GetGitContext) | **Get** /gitprovider/context/{gitUrl} | Get Git context
-[**GetGitProvider**](GitProviderAPI.md#GetGitProvider) | **Get** /gitprovider/{gitProviderId} | Get Git provider
 [**GetGitProviderForUrl**](GitProviderAPI.md#GetGitProviderForUrl) | **Get** /gitprovider/get-by-url/{url} | Get Git provider
 [**GetGitUser**](GitProviderAPI.md#GetGitUser) | **Get** /gitprovider/{gitProviderId}/user | Get Git context
 [**GetGitUsernameFromToken**](GitProviderAPI.md#GetGitUsernameFromToken) | **Get** /gitprovider/username-from-token | Get username from token
 [**GetNamespaces**](GitProviderAPI.md#GetNamespaces) | **Get** /gitprovider/{gitProviderId}/namespaces | Get Git namespaces
-[**GetRepoBranches**](GitProviderAPI.md#GetRepoBranches) | **Get** /gitprovider/repositories/branches | Get Git repository branches
-[**GetRepoPRs**](GitProviderAPI.md#GetRepoPRs) | **Get** /gitprovider/repositories/pull-requests | Get Git repository PRs
+[**GetRepoBranches**](GitProviderAPI.md#GetRepoBranches) | **Get** /gitprovider/{gitProviderId}/{namespaceId}/{repositoryId}/branches | Get Git repository branches
+[**GetRepoPRs**](GitProviderAPI.md#GetRepoPRs) | **Get** /gitprovider/{gitProviderId}/{namespaceId}/{repositoryId}/pull-requests | Get Git repository PRs
 [**GetRepositories**](GitProviderAPI.md#GetRepositories) | **Get** /gitprovider/{gitProviderId}/{namespaceId}/repositories | Get Git repositories
 [**RemoveGitProvider**](GitProviderAPI.md#RemoveGitProvider) | **Delete** /gitprovider/{gitProviderId} | Remove Git provider
 [**SetGitProvider**](GitProviderAPI.md#SetGitProvider) | **Post** /gitprovider | Set Git provider
@@ -73,76 +72,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**GitRepository**](GitRepository.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
-[[Back to Model list]](../README.md#documentation-for-models)
-[[Back to README]](../README.md)
-
-
-## GetGitProvider
-
-> GitProvider GetGitProvider(ctx, gitProviderId).Execute()
-
-Get Git provider
-
-
-
-### Example
-
-```go
-package main
-
-import (
-	"context"
-	"fmt"
-	"os"
-	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID/serverapiclient"
-)
-
-func main() {
-	gitProviderId := "gitProviderId_example" // string | Git provider
-
-	configuration := openapiclient.NewConfiguration()
-	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.GitProviderAPI.GetGitProvider(context.Background(), gitProviderId).Execute()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error when calling `GitProviderAPI.GetGitProvider``: %v\n", err)
-		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
-	}
-	// response from `GetGitProvider`: GitProvider
-	fmt.Fprintf(os.Stdout, "Response from `GitProviderAPI.GetGitProvider`: %v\n", resp)
-}
-```
-
-### Path Parameters
-
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
-**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-**gitProviderId** | **string** | Git provider | 
-
-### Other Parameters
-
-Other parameters are passed through a pointer to a apiGetGitProviderRequest struct via the builder pattern
-
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
-
-
-### Return type
-
-[**GitProvider**](GitProvider.md)
 
 ### Authorization
 

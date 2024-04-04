@@ -304,13 +304,24 @@ paths:
       summary: Remove Git provider
       tags:
       - gitProvider
+  /gitprovider/{gitProviderId}/{namespaceId}/{repositoryId}/branches:
     get:
-      description: Get Git provider
-      operationId: GetGitProvider
+      description: Get Git repository branches
+      operationId: GetRepoBranches
       parameters:
       - description: Git provider
         in: path
         name: gitProviderId
+        required: true
+        type: string
+      - description: Namespace
+        in: path
+        name: namespaceId
+        required: true
+        type: string
+      - description: Repository
+        in: path
+        name: repositoryId
         required: true
         type: string
       produces:
@@ -319,8 +330,42 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/GitProvider'
-      summary: Get Git provider
+            items:
+              $ref: '#/definitions/GitBranch'
+            type: array
+      summary: Get Git repository branches
+      tags:
+      - gitProvider
+  /gitprovider/{gitProviderId}/{namespaceId}/{repositoryId}/pull-requests:
+    get:
+      description: Get Git repository PRs
+      operationId: GetRepoPRs
+      parameters:
+      - description: Git provider
+        in: path
+        name: gitProviderId
+        required: true
+        type: string
+      - description: Namespace
+        in: path
+        name: namespaceId
+        required: true
+        type: string
+      - description: Repository
+        in: path
+        name: repositoryId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/GitPullRequest'
+            type: array
+      summary: Get Git repository PRs
       tags:
       - gitProvider
   /gitprovider/{gitProviderId}/{namespaceId}/repositories:
@@ -430,70 +475,6 @@ paths:
           schema:
             $ref: '#/definitions/GitProvider'
       summary: Get Git provider
-      tags:
-      - gitProvider
-  /gitprovider/repositories/branches:
-    get:
-      description: Get Git repository branches
-      operationId: GetRepoBranches
-      parameters:
-      - description: Git provider
-        in: path
-        name: gitProviderId
-        required: true
-        type: string
-      - description: Namespace
-        in: path
-        name: namespaceId
-        required: true
-        type: string
-      - description: Repository
-        in: path
-        name: repositoryId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/GitBranch'
-            type: array
-      summary: Get Git repository branches
-      tags:
-      - gitProvider
-  /gitprovider/repositories/pull-requests:
-    get:
-      description: Get Git repository PRs
-      operationId: GetRepoPRs
-      parameters:
-      - description: Git provider
-        in: path
-        name: gitProviderId
-        required: true
-        type: string
-      - description: Namespace
-        in: path
-        name: namespaceId
-        required: true
-        type: string
-      - description: Repository
-        in: path
-        name: repositoryId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/GitPullRequest'
-            type: array
-      summary: Get Git repository PRs
       tags:
       - gitProvider
   /gitprovider/username-from-token:

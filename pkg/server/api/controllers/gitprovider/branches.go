@@ -22,7 +22,7 @@ import (
 //	@Param			repositoryId	path	string	true	"Repository"
 //	@Produce		json
 //	@Success		200	{array}	GitBranch
-//	@Router			/gitprovider/repositories/branches [get]
+//	@Router			/gitprovider/{gitProviderId}/{namespaceId}/{repositoryId}/branches [get]
 //
 //	@id				GetRepoBranches
 func GetRepoBranches(ctx *gin.Context) {

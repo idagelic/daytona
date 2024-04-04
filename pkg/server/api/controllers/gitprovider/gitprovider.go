@@ -13,38 +13,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetGitProvider 			godoc
-//
-//	@Tags			gitProvider
-//	@Summary		Get Git provider
-//	@Description	Get Git provider
-//	@Produce		json
-//	@Param			gitProviderId	path		string	true	"Git provider"
-//	@Success		200				{object}	types.GitProvider
-//	@Router			/gitprovider/{gitProviderId} [get]
-//
-//	@id				GetGitProvider
-func GetGitProvider(ctx *gin.Context) {
-	var gitProvider types.GitProvider
-
-	gitProviderId := ctx.Param("gitProviderId")
-
-	c, err := config.GetConfig()
-	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, fmt.Errorf("failed to get config: %s", err.Error()))
-		return
-	}
-
-	for _, provider := range c.GitProviders {
-		if provider.Id == gitProviderId {
-			gitProvider = provider
-			break
-		}
-	}
-
-	ctx.JSON(200, gitProvider)
-}
-
 // GetGitProviderForUrl 			godoc
 //
 //	@Tags			gitProvider
@@ -119,9 +87,17 @@ func SetGitProvider(ctx *gin.Context) {
 
 	if !providerExists {
 		c.GitProviders = append(c.GitProviders, types.GitProvider{
-			Id:    gitProviderData.Id,
-			Token: gitProviderData.Token,
+			Id:         gitProviderData.Id,
+			Token:      gitProviderData.Token,
+			Username:   gitProviderData.Username,
+			BaseApiUrl: gitProviderData.BaseApiUrl,
 		})
+	}
+
+	err = config.Save(c)
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, fmt.Errorf("failed to save config: %s", err.Error()))
+		return
 	}
 
 	ctx.JSON(200, nil)

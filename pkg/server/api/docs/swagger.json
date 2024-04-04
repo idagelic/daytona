@@ -101,100 +101,6 @@
                 }
             }
         },
-        "/gitprovider/repositories/branches": {
-            "get": {
-                "description": "Get Git repository branches",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gitProvider"
-                ],
-                "summary": "Get Git repository branches",
-                "operationId": "GetRepoBranches",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Git provider",
-                        "name": "gitProviderId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Namespace",
-                        "name": "namespaceId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Repository",
-                        "name": "repositoryId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/GitBranch"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/gitprovider/repositories/pull-requests": {
-            "get": {
-                "description": "Get Git repository PRs",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gitProvider"
-                ],
-                "summary": "Get Git repository PRs",
-                "operationId": "GetRepoPRs",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Git provider",
-                        "name": "gitProviderId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Namespace",
-                        "name": "namespaceId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Repository",
-                        "name": "repositoryId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/GitPullRequest"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/gitprovider/username-from-token": {
             "get": {
                 "description": "Get username from token",
@@ -228,34 +134,6 @@
             }
         },
         "/gitprovider/{gitProviderId}": {
-            "get": {
-                "description": "Get Git provider",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gitProvider"
-                ],
-                "summary": "Get Git provider",
-                "operationId": "GetGitProvider",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Git provider",
-                        "name": "gitProviderId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/GitProvider"
-                        }
-                    }
-                }
-            },
             "delete": {
                 "description": "Remove Git provider",
                 "produces": [
@@ -379,6 +257,100 @@
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/GitRepository"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/gitprovider/{gitProviderId}/{namespaceId}/{repositoryId}/branches": {
+            "get": {
+                "description": "Get Git repository branches",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gitProvider"
+                ],
+                "summary": "Get Git repository branches",
+                "operationId": "GetRepoBranches",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Git provider",
+                        "name": "gitProviderId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Namespace",
+                        "name": "namespaceId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Repository",
+                        "name": "repositoryId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/GitBranch"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/gitprovider/{gitProviderId}/{namespaceId}/{repositoryId}/pull-requests": {
+            "get": {
+                "description": "Get Git repository PRs",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gitProvider"
+                ],
+                "summary": "Get Git repository PRs",
+                "operationId": "GetRepoPRs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Git provider",
+                        "name": "gitProviderId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Namespace",
+                        "name": "namespaceId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Repository",
+                        "name": "repositoryId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/GitPullRequest"
                             }
                         }
                     }

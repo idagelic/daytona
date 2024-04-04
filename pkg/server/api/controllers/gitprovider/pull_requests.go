@@ -22,7 +22,7 @@ import (
 //	@Param			repositoryId	path	string	true	"Repository"
 //	@Produce		json
 //	@Success		200	{array}	GitPullRequest
-//	@Router			/gitprovider/repositories/pull-requests [get]
+//	@Router			/gitprovider/{gitProviderId}/{namespaceId}/{repositoryId}/pull-requests [get]
 //
 //	@id				GetRepoPRs
 func GetRepoPRs(ctx *gin.Context) {

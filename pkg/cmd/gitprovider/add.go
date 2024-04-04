@@ -5,6 +5,7 @@ package gitprovider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/daytonaio/daytona/internal/util/apiclient/server"
 	"github.com/daytonaio/daytona/pkg/serverapiclient"
@@ -45,6 +46,11 @@ var gitProviderAddCmd = &cobra.Command{
 			}
 			*gitProviderData.Username = gitUsername
 		}
+
+		fmt.Println(*gitProviderData.Id)
+		fmt.Println(*gitProviderData.BaseApiUrl)
+		fmt.Println(*gitProviderData.Token)
+		fmt.Println(*gitProviderData.Username)
 
 		_, err = apiClient.GitProviderAPI.SetGitProvider(ctx).GitProviderData(gitProviderData).Execute()
 		if err != nil {
