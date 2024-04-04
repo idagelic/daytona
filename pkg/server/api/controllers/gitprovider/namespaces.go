@@ -34,7 +34,7 @@ func GetNamespaces(ctx *gin.Context) {
 
 	gitProvider := gitprovider.GetGitProvider(gitProviderId, c.GitProviders)
 	if gitProvider == nil {
-		ctx.AbortWithStatus(http.StatusNotFound)
+		ctx.AbortWithError(http.StatusNotFound, fmt.Errorf("git provider not found"))
 		return
 	}
 
