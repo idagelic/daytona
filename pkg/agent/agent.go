@@ -101,7 +101,7 @@ func (a *Agent) getGitProvider(repoUrl string) (*serverapiclient.GitProvider, er
 
 	gitProvider, res, err := apiClient.GitProviderAPI.GetGitProviderForUrl(ctx, repoUrl).Execute()
 	if err != nil {
-		log.Fatal(apiclient.HandleErrorResponse(res, err))
+		return nil, apiclient.HandleErrorResponse(res, err)
 	}
 
 	if gitProvider != nil {

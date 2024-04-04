@@ -16,11 +16,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type GitCredentials struct {
-	Username string `json:"username"`
-	Token    string `json:"token"`
-}
-
 var gitCredCmd = &cobra.Command{
 	Use:     "git-cred get",
 	Aliases: []string{"rev"},
@@ -54,13 +49,8 @@ var gitCredCmd = &cobra.Command{
 			return
 		}
 
-		gitCredentials := GitCredentials{
-			Username: *gitProvider.Username,
-			Token:    *gitProvider.Token,
-		}
-
-		fmt.Println("username=" + gitCredentials.Username)
-		fmt.Println("password=" + gitCredentials.Token)
+		fmt.Println("username=" + *gitProvider.Username)
+		fmt.Println("password=" + *gitProvider.Token)
 	},
 }
 

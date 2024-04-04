@@ -30,7 +30,7 @@ func GetRepositories(ctx *gin.Context) {
 
 	c, err := config.GetConfig()
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, fmt.Errorf("failed to get credentials: %s", err.Error()))
+		ctx.AbortWithError(http.StatusInternalServerError, fmt.Errorf("failed to get config: %s", err.Error()))
 		return
 	}
 
