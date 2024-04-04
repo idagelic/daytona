@@ -74,7 +74,7 @@ var CreateCmd = &cobra.Command{
 
 		for _, repo := range repos {
 			if visited[*repo.Url] {
-				log.Fatalf("Error: duplicate repository url: %s", repo.Url)
+				log.Fatalf("Error: duplicate repository url: %s", *repo.Url)
 			}
 			visited[*repo.Url] = true
 		}
