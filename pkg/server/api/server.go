@@ -66,6 +66,9 @@ func GetServer() (*http.Server, error) {
 	protected := router.Group("/")
 	protected.Use(middlewares.AuthMiddleware())
 
+	project := protected.Group("/")
+	project.Use(middlewares.ProjectAuthMiddleware())
+
 	config, err := config.GetConfig()
 	if err != nil {
 		return nil, err
@@ -117,9 +120,8 @@ func GetServer() (*http.Server, error) {
 		logController.GET("/workspace/:workspaceId", log_controller.ReadWorkspaceLog)
 	}
 
-	gitProviderController := router.Group("/gitprovider")
+	gitProviderController := protected.Group("/gitprovider")
 	{
-		gitProviderController.GET("/for-url/:url", middlewares.ProjectAuthMiddleware(), gitprovider.GetGitProviderForUrl)
 		gitProviderController.POST("/", gitprovider.SetGitProvider)
 		gitProviderController.DELETE("/:gitProviderId", gitprovider.RemoveGitProvider)
 		gitProviderController.GET("/:gitProviderId/user", gitprovider.GetGitUser)
@@ -130,6 +132,8 @@ func GetServer() (*http.Server, error) {
 		gitProviderController.GET("/context/:gitUrl", gitprovider.GetGitContext)
 		gitProviderController.GET("/username-from-token", gitprovider.GetGitUsernameFromToken)
 	}
+
+	project.GET(gitProviderController.BasePath()+"/for-url/:url", middlewares.ProjectAuthMiddleware(), gitprovider.GetGitProviderForUrl)
 
 	httpServer = &http.Server{
 		Addr:    fmt.Sprintf(":%d", config.ApiPort),

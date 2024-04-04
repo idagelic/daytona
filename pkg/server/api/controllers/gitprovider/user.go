@@ -74,5 +74,5 @@ func GetGitUsernameFromToken(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(200, username)
+	ctx.String(200, username)
 }
