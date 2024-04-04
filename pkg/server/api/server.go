@@ -119,7 +119,7 @@ func GetServer() (*http.Server, error) {
 
 	gitProviderController := router.Group("/gitprovider")
 	{
-		gitProviderController.GET("/for-url/:url", middlewares.ProjectMiddleware(), gitprovider.GetGitProviderForUrl)
+		gitProviderController.GET("/for-url/:url", middlewares.ProjectAuthMiddleware(), gitprovider.GetGitProviderForUrl)
 		gitProviderController.POST("/", gitprovider.SetGitProvider)
 		gitProviderController.DELETE("/:gitProviderId", gitprovider.RemoveGitProvider)
 		gitProviderController.GET("/:gitProviderId/user", gitprovider.GetGitUser)
