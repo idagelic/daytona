@@ -122,7 +122,7 @@ func GetServer() (*http.Server, error) {
 
 	gitProviderController := protected.Group("/gitprovider")
 	{
-		gitProviderController.POST("/", gitprovider.SetGitProvider)
+		gitProviderController.PUT("/", gitprovider.SetGitProvider)
 		gitProviderController.DELETE("/:gitProviderId", gitprovider.RemoveGitProvider)
 		gitProviderController.GET("/:gitProviderId/user", gitprovider.GetGitUser)
 		gitProviderController.GET("/:gitProviderId/namespaces", gitprovider.GetNamespaces)
