@@ -86,7 +86,7 @@ Class | Method | HTTP request | Description
 *GitProviderAPI* | [**GetRepoPRs**](docs/GitProviderAPI.md#getrepoprs) | **Get** /gitprovider/{gitProviderId}/{namespaceId}/{repositoryId}/pull-requests | Get Git repository PRs
 *GitProviderAPI* | [**GetRepositories**](docs/GitProviderAPI.md#getrepositories) | **Get** /gitprovider/{gitProviderId}/{namespaceId}/repositories | Get Git repositories
 *GitProviderAPI* | [**RemoveGitProvider**](docs/GitProviderAPI.md#removegitprovider) | **Delete** /gitprovider/{gitProviderId} | Remove Git provider
-*GitProviderAPI* | [**SetGitProvider**](docs/GitProviderAPI.md#setgitprovider) | **Post** /gitprovider | Set Git provider
+*GitProviderAPI* | [**SetGitProvider**](docs/GitProviderAPI.md#setgitprovider) | **Put** /gitprovider | Set Git provider
 *ProviderAPI* | [**GetTargetManifest**](docs/ProviderAPI.md#gettargetmanifest) | **Get** /provider/{provider}/target-manifest | Get provider target manifest
 *ProviderAPI* | [**InstallProvider**](docs/ProviderAPI.md#installprovider) | **Post** /provider/install | Install a provider
 *ProviderAPI* | [**ListProviders**](docs/ProviderAPI.md#listproviders) | **Get** /provider | List providers

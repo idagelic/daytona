@@ -64,7 +64,7 @@ func GetGitProviderForUrl(ctx *gin.Context) {
 //	@Param			gitProviderData	body	types.GitProvider	true	"Git provider"
 //	@Produce		json
 //	@Success		200
-//	@Router			/gitprovider [post]
+//	@Router			/gitprovider [put]
 //
 //	@id				SetGitProvider
 func SetGitProvider(ctx *gin.Context) {

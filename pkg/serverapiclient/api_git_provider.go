@@ -1008,7 +1008,7 @@ func (a *GitProviderAPIService) SetGitProvider(ctx context.Context) ApiSetGitPro
 // Execute executes the request
 func (a *GitProviderAPIService) SetGitProviderExecute(r ApiSetGitProviderRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod = http.MethodPost
+		localVarHTTPMethod = http.MethodPut
 		localVarPostBody   interface{}
 		formFiles          []formFile
 	)

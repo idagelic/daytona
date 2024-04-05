@@ -16,7 +16,7 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/gitprovider": {
-            "post": {
+            "put": {
                 "description": "Set Git provider",
                 "produces": [
                     "application/json"

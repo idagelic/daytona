@@ -13,7 +13,7 @@ Method | HTTP request | Description
 [**GetRepoPRs**](GitProviderAPI.md#GetRepoPRs) | **Get** /gitprovider/{gitProviderId}/{namespaceId}/{repositoryId}/pull-requests | Get Git repository PRs
 [**GetRepositories**](GitProviderAPI.md#GetRepositories) | **Get** /gitprovider/{gitProviderId}/{namespaceId}/repositories | Get Git repositories
 [**RemoveGitProvider**](GitProviderAPI.md#RemoveGitProvider) | **Delete** /gitprovider/{gitProviderId} | Remove Git provider
-[**SetGitProvider**](GitProviderAPI.md#SetGitProvider) | **Post** /gitprovider | Set Git provider
+[**SetGitProvider**](GitProviderAPI.md#SetGitProvider) | **Put** /gitprovider | Set Git provider
 
 
 

@@ -268,7 +268,7 @@ info:
   version: 0.1.0
 paths:
   /gitprovider:
-    post:
+    put:
       description: Set Git provider
       operationId: SetGitProvider
       parameters:

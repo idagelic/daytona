@@ -13,7 +13,7 @@
     "basePath": "/",
     "paths": {
         "/gitprovider": {
-            "post": {
+            "put": {
                 "description": "Set Git provider",
                 "produces": [
                     "application/json"
