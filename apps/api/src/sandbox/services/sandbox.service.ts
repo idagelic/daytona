@@ -105,17 +105,25 @@ export class SandboxService {
     // validate per-sandbox quotas
     if (cpu > organization.maxCpuPerSandbox) {
       throw new ForbiddenException(
-        `CPU request ${cpu} exceeds maximum allowed per sandbox (${organization.maxCpuPerSandbox})`,
+        `CPU request ${cpu} exceeds maximum allowed per sandbox (${organization.maxCpuPerSandbox}).
+
+To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`,
       )
     }
     if (memory > organization.maxMemoryPerSandbox) {
       throw new ForbiddenException(
-        `Memory request ${memory}GB exceeds maximum allowed per sandbox (${organization.maxMemoryPerSandbox}GB)`,
+        `Memory request ${memory}GB exceeds maximum allowed per sandbox (${organization.maxMemoryPerSandbox}GB).
+
+To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`,
       )
     }
     if (disk > organization.maxDiskPerSandbox) {
       throw new ForbiddenException(
-        `Disk request ${disk}GB exceeds maximum allowed per sandbox (${organization.maxDiskPerSandbox}GB)`,
+        `Disk request ${disk}GB exceeds maximum allowed per sandbox (${organization.maxDiskPerSandbox}GB).
+
+Consider archiving your unused Sandboxes to free up available storage.
+
+To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`,
       )
     }
 
@@ -136,17 +144,25 @@ export class SandboxService {
 
     try {
       if (usageOverview.currentCpuUsage + usageOverview.pendingCpuUsage > organization.totalCpuQuota) {
-        throw new ForbiddenException(`Total CPU quota exceeded. Maximum allowed: ${organization.totalCpuQuota}`)
+        throw new ForbiddenException(`Total CPU limit exceeded. Maximum allowed: ${organization.totalCpuQuota}.
+
+To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`)
       }
 
       if (usageOverview.currentMemoryUsage + usageOverview.pendingMemoryUsage > organization.totalMemoryQuota) {
         throw new ForbiddenException(
-          `Total memory quota exceeded. Maximum allowed: ${organization.totalMemoryQuota}GiB`,
+          `Total memory limit exceeded. Maximum allowed: ${organization.totalMemoryQuota}GiB.
+
+To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`,
         )
       }
 
       if (usageOverview.currentDiskUsage + usageOverview.pendingDiskUsage > organization.totalDiskQuota) {
-        throw new ForbiddenException(`Total disk quota exceeded. Maximum allowed: ${organization.totalDiskQuota}GiB`)
+        throw new ForbiddenException(`Total disk limit exceeded. Maximum allowed: ${organization.totalDiskQuota}GiB.
+
+Consider archiving your unused Sandboxes to free up available storage.
+
+To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`)
       }
     } catch (error) {
       await this.rollbackPendingUsage(

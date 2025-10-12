@@ -42,7 +42,11 @@ export class VolumeService {
 
     try {
       if (usageOverview.currentVolumeUsage + usageOverview.pendingVolumeUsage > organization.volumeQuota) {
-        throw new ForbiddenException(`Volume quota exceeded. Maximum allowed: ${organization.volumeQuota}`)
+        throw new ForbiddenException(`Volume limit exceeded. Maximum allowed: ${organization.volumeQuota}.
+
+Consider archiving your unused Sandboxes to free up available storage.
+
+To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`)
       }
     } catch (error) {
       await this.rollbackPendingUsage(organization.id, addedVolumeCount)

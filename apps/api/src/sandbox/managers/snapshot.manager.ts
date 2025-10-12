@@ -676,7 +676,11 @@ export class SnapshotManager implements TrackableJobExecutions, OnApplicationShu
       await this.updateSnapshotState(
         snapshot.id,
         SnapshotState.ERROR,
-        `Snapshot size (${snapshotInfo.sizeGB.toFixed(2)}GB) exceeds maximum allowed size of ${MAX_SIZE_GB}GB`,
+        `Snapshot size (${snapshotInfo.sizeGB.toFixed(2)}GB) exceeds maximum allowed size of ${MAX_SIZE_GB}GB.
+
+Consider archiving your unused Sandboxes to free up available storage.
+
+To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`,
       )
       return
     }
