@@ -33,6 +33,7 @@ import { TrackJobExecution } from '../../common/decorators/track-job-execution.d
 import { setTimeout as sleep } from 'timers/promises'
 import { TypedConfigService } from '../../config/typed-config.service'
 import { LogExecution } from '../../common/decorators/log-execution.decorator'
+import { UPGRADE_TIER_MESSAGE, ARCHIVE_SANDBOXES_MESSAGE } from '../../common/constants/error-messages'
 
 @Injectable()
 export class SnapshotManager implements TrackableJobExecutions, OnApplicationShutdown {
@@ -676,11 +677,7 @@ export class SnapshotManager implements TrackableJobExecutions, OnApplicationShu
       await this.updateSnapshotState(
         snapshot.id,
         SnapshotState.ERROR,
-        `Snapshot size (${snapshotInfo.sizeGB.toFixed(2)}GB) exceeds maximum allowed size of ${MAX_SIZE_GB}GB.
-
-Consider archiving your unused Sandboxes to free up available storage.
-
-To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`,
+        `Snapshot size (${snapshotInfo.sizeGB.toFixed(2)}GB) exceeds maximum allowed size of ${MAX_SIZE_GB}GB.\n\n${ARCHIVE_SANDBOXES_MESSAGE}\n\n${UPGRADE_TIER_MESSAGE}`,
       )
       return
     }

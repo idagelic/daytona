@@ -33,6 +33,7 @@ import { PaginatedList } from '../../common/interfaces/paginated-list.interface'
 import { OrganizationUsageService } from '../../organization/services/organization-usage.service'
 import { RedisLockProvider } from '../common/redis-lock.provider'
 import { SnapshotSortDirection, SnapshotSortField } from '../dto/list-snapshots-query.dto'
+import { UPGRADE_TIER_MESSAGE, ARCHIVE_SANDBOXES_MESSAGE } from '../../common/constants/error-messages'
 
 const IMAGE_NAME_REGEX = /^[a-zA-Z0-9_.\-:]+(\/[a-zA-Z0-9_.\-:]+)*$/
 @Injectable()
@@ -280,25 +281,17 @@ export class SnapshotService {
     // validate per-sandbox quotas
     if (cpu && cpu > organization.maxCpuPerSandbox) {
       throw new ForbiddenException(
-        `CPU request ${cpu} exceeds maximum allowed per sandbox (${organization.maxCpuPerSandbox}).
-
-To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`,
+        `CPU request ${cpu} exceeds maximum allowed per sandbox (${organization.maxCpuPerSandbox}).\n\n${UPGRADE_TIER_MESSAGE}`,
       )
     }
     if (memory && memory > organization.maxMemoryPerSandbox) {
       throw new ForbiddenException(
-        `Memory request ${memory}GB exceeds maximum allowed per sandbox (${organization.maxMemoryPerSandbox}GB).
-
-To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`,
+        `Memory request ${memory}GB exceeds maximum allowed per sandbox (${organization.maxMemoryPerSandbox}GB).\n\n${UPGRADE_TIER_MESSAGE}`,
       )
     }
     if (disk && disk > organization.maxDiskPerSandbox) {
       throw new ForbiddenException(
-        `Disk request ${disk}GB exceeds maximum allowed per sandbox (${organization.maxDiskPerSandbox}GB).
-
-Consider archiving your unused Sandboxes to free up available storage.
-
-To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`,
+        `Disk request ${disk}GB exceeds maximum allowed per sandbox (${organization.maxDiskPerSandbox}GB).\n\n${ARCHIVE_SANDBOXES_MESSAGE}\n\n${UPGRADE_TIER_MESSAGE}`,
       )
     }
 
@@ -309,11 +302,7 @@ To increase concurrency limits, upgrade your organization's Tier by visiting <ht
 
     try {
       if (usageOverview.currentSnapshotUsage + usageOverview.pendingSnapshotUsage > organization.snapshotQuota) {
-        throw new ForbiddenException(`Snapshot limit exceeded. Maximum allowed: ${organization.snapshotQuota}.
-
-Consider archiving your unused Sandboxes to free up available storage.
-
-To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`)
+        throw new ForbiddenException(`Snapshot limit exceeded. Maximum allowed: ${organization.snapshotQuota}.\n\n${UPGRADE_TIER_MESSAGE}`)
       }
     } catch (error) {
       await this.rollbackPendingUsage(organization.id, addedSnapshotCount)

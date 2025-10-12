@@ -59,6 +59,7 @@ import {
 } from '../dto/list-sandboxes-query.dto'
 import { createRangeFilter } from '../../common/utils/range-filter'
 import { LogExecution } from '../../common/decorators/log-execution.decorator'
+import { UPGRADE_TIER_MESSAGE, ARCHIVE_SANDBOXES_MESSAGE } from '../../common/constants/error-messages'
 
 const DEFAULT_CPU = 1
 const DEFAULT_MEMORY = 1
@@ -105,25 +106,17 @@ export class SandboxService {
     // validate per-sandbox quotas
     if (cpu > organization.maxCpuPerSandbox) {
       throw new ForbiddenException(
-        `CPU request ${cpu} exceeds maximum allowed per sandbox (${organization.maxCpuPerSandbox}).
-
-To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`,
+        `CPU request ${cpu} exceeds maximum allowed per sandbox (${organization.maxCpuPerSandbox}).\n\n${UPGRADE_TIER_MESSAGE}`,
       )
     }
     if (memory > organization.maxMemoryPerSandbox) {
       throw new ForbiddenException(
-        `Memory request ${memory}GB exceeds maximum allowed per sandbox (${organization.maxMemoryPerSandbox}GB).
-
-To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`,
+        `Memory request ${memory}GB exceeds maximum allowed per sandbox (${organization.maxMemoryPerSandbox}GB).\n\n${UPGRADE_TIER_MESSAGE}`,
       )
     }
     if (disk > organization.maxDiskPerSandbox) {
       throw new ForbiddenException(
-        `Disk request ${disk}GB exceeds maximum allowed per sandbox (${organization.maxDiskPerSandbox}GB).
-
-Consider archiving your unused Sandboxes to free up available storage.
-
-To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`,
+        `Disk request ${disk}GB exceeds maximum allowed per sandbox (${organization.maxDiskPerSandbox}GB).\n\n${ARCHIVE_SANDBOXES_MESSAGE}\n\n${UPGRADE_TIER_MESSAGE}`,
       )
     }
 
@@ -144,25 +137,17 @@ To increase concurrency limits, upgrade your organization's Tier by visiting <ht
 
     try {
       if (usageOverview.currentCpuUsage + usageOverview.pendingCpuUsage > organization.totalCpuQuota) {
-        throw new ForbiddenException(`Total CPU limit exceeded. Maximum allowed: ${organization.totalCpuQuota}.
-
-To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`)
+        throw new ForbiddenException(`Total CPU limit exceeded. Maximum allowed: ${organization.totalCpuQuota}.\n\n${UPGRADE_TIER_MESSAGE}`)
       }
 
       if (usageOverview.currentMemoryUsage + usageOverview.pendingMemoryUsage > organization.totalMemoryQuota) {
         throw new ForbiddenException(
-          `Total memory limit exceeded. Maximum allowed: ${organization.totalMemoryQuota}GiB.
-
-To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`,
+          `Total memory limit exceeded. Maximum allowed: ${organization.totalMemoryQuota}GiB.\n\n${UPGRADE_TIER_MESSAGE}`,
         )
       }
 
       if (usageOverview.currentDiskUsage + usageOverview.pendingDiskUsage > organization.totalDiskQuota) {
-        throw new ForbiddenException(`Total disk limit exceeded. Maximum allowed: ${organization.totalDiskQuota}GiB.
-
-Consider archiving your unused Sandboxes to free up available storage.
-
-To increase concurrency limits, upgrade your organization's Tier by visiting <https://app.daytona.io/dashboard/limits>.`)
+        throw new ForbiddenException(`Total disk limit exceeded. Maximum allowed: ${organization.totalDiskQuota}GiB.\n\n${ARCHIVE_SANDBOXES_MESSAGE}\n\n${UPGRADE_TIER_MESSAGE}`)
       }
     } catch (error) {
       await this.rollbackPendingUsage(
