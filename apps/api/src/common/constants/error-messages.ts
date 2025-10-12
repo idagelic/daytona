@@ -6,3 +6,5 @@
 export const UPGRADE_TIER_MESSAGE = 'To increase concurrency limits, upgrade your organization\'s Tier by visiting <https://app.daytona.io/dashboard/limits>.'
 
 export const ARCHIVE_SANDBOXES_MESSAGE = 'Consider archiving your unused Sandboxes to free up available storage.'
+
+export const PER_SANDBOX_LIMIT_MESSAGE = 'Need higher resource limits per-sandbox? Contact us at <mailto:support@daytona.io|support@daytona.io> and let us know about your use case.'

@@ -17,7 +17,6 @@ import { SandboxEvents } from '../constants/sandbox-events.constants'
 import { SandboxCreatedEvent } from '../events/sandbox-create.event'
 import { OrganizationService } from '../../organization/services/organization.service'
 import { OrganizationUsageService } from '../../organization/services/organization-usage.service'
-import { UPGRADE_TIER_MESSAGE, ARCHIVE_SANDBOXES_MESSAGE } from '../../common/constants/error-messages'
 
 @Injectable()
 export class VolumeService {
@@ -43,7 +42,7 @@ export class VolumeService {
 
     try {
       if (usageOverview.currentVolumeUsage + usageOverview.pendingVolumeUsage > organization.volumeQuota) {
-        throw new ForbiddenException(`Volume limit exceeded. Maximum allowed: ${organization.volumeQuota}.\n\n${ARCHIVE_SANDBOXES_MESSAGE}\n\n${UPGRADE_TIER_MESSAGE}`)
+        throw new ForbiddenException(`Volume quota exceeded. Maximum allowed: ${organization.volumeQuota}`)
       }
     } catch (error) {
       await this.rollbackPendingUsage(organization.id, addedVolumeCount)

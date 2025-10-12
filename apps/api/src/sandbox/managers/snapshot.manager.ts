@@ -677,7 +677,7 @@ export class SnapshotManager implements TrackableJobExecutions, OnApplicationShu
       await this.updateSnapshotState(
         snapshot.id,
         SnapshotState.ERROR,
-        `Snapshot size (${snapshotInfo.sizeGB.toFixed(2)}GB) exceeds maximum allowed size of ${MAX_SIZE_GB}GB.\n\n${ARCHIVE_SANDBOXES_MESSAGE}\n\n${UPGRADE_TIER_MESSAGE}`,
+        `Snapshot size (${snapshotInfo.sizeGB.toFixed(2)}GB) exceeds maximum allowed size of ${MAX_SIZE_GB}GB.\n${ARCHIVE_SANDBOXES_MESSAGE}\n${UPGRADE_TIER_MESSAGE}`,
       )
       return
     }
