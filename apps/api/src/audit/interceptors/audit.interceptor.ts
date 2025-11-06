@@ -75,10 +75,15 @@ export class AuditInterceptor implements NestInterceptor {
     observer: Subscriber<any>,
   ): Promise<void> {
     try {
+      const apiKeyId = request.user.apiKey
+        ? `${request.user.apiKey.organizationId}:${request.user.apiKey.userId}:${request.user.apiKey.name}`
+        : undefined
+
       const auditLog = await this.auditService.createLog({
         actorId: request.user.userId,
         actorEmail: request.user.email,
         organizationId: request.user.organizationId,
+        apiKeyId,
         action: auditContext.action,
         targetType: auditContext.targetType,
         targetId: this.resolveTargetId(auditContext, request),

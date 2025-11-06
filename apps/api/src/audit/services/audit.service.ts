@@ -63,6 +63,7 @@ export class AuditService implements OnApplicationBootstrap {
     auditLog.actorId = createDto.actorId
     auditLog.actorEmail = createDto.actorEmail
     auditLog.organizationId = createDto.organizationId
+    auditLog.apiKeyId = createDto.apiKeyId
     auditLog.action = createDto.action
     auditLog.targetType = createDto.targetType
     auditLog.targetId = createDto.targetId

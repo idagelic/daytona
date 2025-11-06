@@ -25,6 +25,9 @@ export class AuditLog {
   @Column({ nullable: true })
   organizationId?: string
 
+  @Column({ nullable: true })
+  apiKeyId?: string
+
   @Column()
   action: string
 
