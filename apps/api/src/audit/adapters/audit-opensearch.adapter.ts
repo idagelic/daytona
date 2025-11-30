@@ -182,6 +182,7 @@ export class AuditOpenSearchStorageAdapter implements AuditLogStorageAdapter, On
     auditLog.actorId = source.actorId
     auditLog.actorEmail = source.actorEmail
     auditLog.organizationId = source.organizationId
+    auditLog.apiKeyId = source.apiKeyId
     auditLog.action = source.action
     auditLog.targetType = source.targetType
     auditLog.targetId = source.targetId

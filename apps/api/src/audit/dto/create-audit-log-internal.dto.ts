@@ -11,6 +11,7 @@ export class CreateAuditLogInternalDto {
   actorId: string
   actorEmail: string
   organizationId?: string
+  apiKeyId?: string
   action: AuditAction
   targetType?: AuditTarget
   targetId?: string

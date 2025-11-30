@@ -32,6 +32,7 @@ class AuditLog(BaseModel):
     actor_id: StrictStr = Field(alias="actorId")
     actor_email: StrictStr = Field(alias="actorEmail")
     organization_id: Optional[StrictStr] = Field(default=None, alias="organizationId")
+    api_key_id: Optional[StrictStr] = Field(default=None, alias="apiKeyId")
     action: StrictStr
     target_type: Optional[StrictStr] = Field(default=None, alias="targetType")
     target_id: Optional[StrictStr] = Field(default=None, alias="targetId")
@@ -43,7 +44,7 @@ class AuditLog(BaseModel):
     metadata: Optional[Dict[str, Any]] = None
     created_at: datetime = Field(alias="createdAt")
     additional_properties: Dict[str, Any] = {}
-    __properties: ClassVar[List[str]] = ["id", "actorId", "actorEmail", "organizationId", "action", "targetType", "targetId", "statusCode", "errorMessage", "ipAddress", "userAgent", "source", "metadata", "createdAt"]
+    __properties: ClassVar[List[str]] = ["id", "actorId", "actorEmail", "organizationId", "apiKeyId", "action", "targetType", "targetId", "statusCode", "errorMessage", "ipAddress", "userAgent", "source", "metadata", "createdAt"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -107,6 +108,7 @@ class AuditLog(BaseModel):
             "actorId": obj.get("actorId"),
             "actorEmail": obj.get("actorEmail"),
             "organizationId": obj.get("organizationId"),
+            "apiKeyId": obj.get("apiKeyId"),
             "action": obj.get("action"),
             "targetType": obj.get("targetType"),
             "targetId": obj.get("targetId"),
