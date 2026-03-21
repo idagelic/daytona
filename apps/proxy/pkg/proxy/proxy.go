@@ -59,6 +59,7 @@ type Proxy struct {
 	config       *config.Config
 	secureCookie *securecookie.SecureCookie
 	cookieDomain *string
+	transport    *http.Transport
 
 	apiclient                      *apiclient.APIClient
 	runnerCache                    common_cache.ICache[RunnerInfo]
@@ -79,6 +80,7 @@ func StartProxy(ctx context.Context, config *config.Config) error {
 		proxy.cookieDomain = &cookieDomain
 	}
 
+	proxy.transport = common_proxy.NewProxyTransport(config.DialTimeoutSec)
 	proxy.apiclient = config.ApiClient
 
 	if config.Redis != nil {
@@ -188,12 +190,12 @@ func StartProxy(ctx context.Context, config *config.Config) error {
 					}
 
 					if regexp.MustCompile(`^/snapshots/[\w-]+/build-logs$`).MatchString(ctx.Request.URL.Path) {
-						common_proxy.NewProxyRequestHandler(proxy.getSnapshotTarget, nil)(ctx)
+						common_proxy.NewProxyRequestHandlerWithTransport(proxy.getSnapshotTarget, nil, proxy.transport)(ctx)
 						return
 					}
 
 					if regexp.MustCompile(`^/sandboxes/[\w-]+/build-logs$`).MatchString(ctx.Request.URL.Path) {
-						common_proxy.NewProxyRequestHandler(proxy.getSandboxBuildTarget, nil)(ctx)
+						common_proxy.NewProxyRequestHandlerWithTransport(proxy.getSandboxBuildTarget, nil, proxy.transport)(ctx)
 						return
 					}
 				}
@@ -218,7 +220,7 @@ func StartProxy(ctx context.Context, config *config.Config) error {
 					return nil
 				}
 
-				common_proxy.NewProxyRequestHandler(proxy.GetProxyTarget, modifyResponse)(ctx)
+				common_proxy.NewProxyRequestHandlerWithTransport(proxy.GetProxyTarget, modifyResponse, proxy.transport)(ctx)
 				return
 			}
 
@@ -232,7 +234,7 @@ func StartProxy(ctx context.Context, config *config.Config) error {
 			return
 		}
 
-		common_proxy.NewProxyRequestHandler(proxy.GetProxyTarget, nil)(ctx)
+		common_proxy.NewProxyRequestHandlerWithTransport(proxy.GetProxyTarget, nil, proxy.transport)(ctx)
 	})
 
 	httpServer := &http.Server{

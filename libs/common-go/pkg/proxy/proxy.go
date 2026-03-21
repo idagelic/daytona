@@ -13,11 +13,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var proxyTransport = &http.Transport{
+// NewProxyTransport creates an HTTP transport with configurable dial timeout
+func NewProxyTransport(dialTimeoutSec int) *http.Transport {
+	return &http.Transport{
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 100,
+		DialContext: (&net.Dialer{
+			KeepAlive: 30 * time.Second,
+			Timeout:   time.Duration(dialTimeoutSec) * time.Second,
+		}).DialContext,
+	}
+}
+
+var defaultProxyTransport = &http.Transport{
 	MaxIdleConns:        100,
 	MaxIdleConnsPerHost: 100,
 	DialContext: (&net.Dialer{
 		KeepAlive: 30 * time.Second,
+		Timeout:   10 * time.Second,
 	}).DialContext,
 }
 
@@ -37,6 +50,12 @@ var proxyTransport = &http.Transport{
 //	@Failure		500			{object}	string	"Internal server error"
 //	@Router			/workspaces/{workspaceId}/{projectId}/toolbox/{path} [get]
 func NewProxyRequestHandler(getProxyTarget func(*gin.Context) (targetUrl *url.URL, extraHeaders map[string]string, err error), modifyResponse func(*http.Response) error) gin.HandlerFunc {
+	return NewProxyRequestHandlerWithTransport(getProxyTarget, modifyResponse, nil)
+}
+
+// NewProxyRequestHandlerWithTransport creates a proxy handler with a custom transport.
+// If transport is nil, a default transport will be used.
+func NewProxyRequestHandlerWithTransport(getProxyTarget func(*gin.Context) (targetUrl *url.URL, extraHeaders map[string]string, err error), modifyResponse func(*http.Response) error, transport http.RoundTripper) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		target, extraHeaders, err := getProxyTarget(ctx)
 		if err != nil {
@@ -46,6 +65,10 @@ func NewProxyRequestHandler(getProxyTarget func(*gin.Context) (targetUrl *url.UR
 
 		if target == nil {
 			return
+		}
+
+		if transport == nil {
+			transport = defaultProxyTransport
 		}
 
 		reverseProxy := &httputil.ReverseProxy{
@@ -63,7 +86,7 @@ func NewProxyRequestHandler(getProxyTarget func(*gin.Context) (targetUrl *url.UR
 					req.Header.Add(key, value)
 				}
 			},
-			Transport:      proxyTransport,
+			Transport:      transport,
 			ModifyResponse: modifyResponse,
 		}
 
