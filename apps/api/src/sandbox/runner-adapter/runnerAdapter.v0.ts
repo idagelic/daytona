@@ -140,6 +140,13 @@ export class RunnerAdapterV0 implements RunnerAdapter {
         return response
       },
       (error) => {
+        // Handle AggregateError (thrown when runner is unreachable with multiple connection failures)
+        if (error instanceof AggregateError) {
+          const underlyingErrors = error.errors.map(err => err.message || String(err)).join(', ')
+          const errorMessage = `Runner unreachable: ${underlyingErrors}`
+          throw new RunnerApiError(errorMessage, undefined, 'AGGREGATE_ERROR')
+        }
+
         const errorMessage = error.response?.data?.message || error.response?.data || error.message || String(error)
         const statusCode = error.response?.data?.statusCode || error.response?.status || error.status
         const code = error.response?.data?.code || (error as any).code || (error as any).cause?.code || ''
