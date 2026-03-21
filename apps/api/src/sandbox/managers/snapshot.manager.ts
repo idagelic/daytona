@@ -303,7 +303,8 @@ export class SnapshotManager implements TrackableJobExecutions, OnApplicationShu
         runnersToPropagateTo.map(async (runner) => {
           const internalRegistry = internalRegistriesMap.get(runner.region)
           if (!internalRegistry) {
-            throw new Error(`No internal registry found for snapshot ${snapshot.ref} in region ${runner.region}`)
+            this.logger.warn(`No internal registry found for snapshot ${snapshot.ref} in region ${runner.region}. Skipping this runner.`)
+            return
           }
 
           const snapshotRunner = await this.runnerService.getSnapshotRunner(runner.id, snapshot.ref)
@@ -383,9 +384,13 @@ export class SnapshotManager implements TrackableJobExecutions, OnApplicationShu
         runner.region,
       )
       if (!internalRegistry) {
-        throw new Error(
-          `No internal registry found for snapshot ${snapshotRunner.snapshotRef} in region ${runner.region}`,
+        this.logger.warn(
+          `No internal registry found for snapshot ${snapshotRunner.snapshotRef} in region ${runner.region}. Marking snapshot runner as error.`,
         )
+        snapshotRunner.state = SnapshotRunnerState.ERROR
+        snapshotRunner.errorReason = `No internal registry found for snapshot ${snapshotRunner.snapshotRef} in region ${runner.region}`
+        await this.snapshotRunnerRepository.save(snapshotRunner)
+        return
       }
       await this.pullSnapshotRunner(runner, snapshotRunner.snapshotRef, internalRegistry)
       return
