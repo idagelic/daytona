@@ -852,7 +852,17 @@ export class SandboxManager implements TrackableJobExecutions, OnApplicationShut
             }
           }
         } catch (error) {
-          this.logger.error(`Error processing desired state for sandbox ${sandboxId}:`, error)
+          // Extract root cause from error chain
+          const rootCause = this.extractRootCause(error)
+          const errorMessage = `Error processing desired state for sandbox ${sandboxId}${rootCause ? ` (${rootCause})` : ''}`
+          
+          // Log at warn level for transient network issues, error level otherwise
+          const isTransientNetworkIssue = this.isTransientNetworkError(error)
+          if (isTransientNetworkIssue) {
+            this.logger.warn(errorMessage, error)
+          } else {
+            this.logger.error(errorMessage, error)
+          }
 
           const { recoverable, errorReason } = sanitizeSandboxError(error)
 
