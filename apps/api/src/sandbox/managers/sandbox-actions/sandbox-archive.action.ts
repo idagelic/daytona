@@ -18,6 +18,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { SandboxEvents } from '../../constants/sandbox-events.constants'
 import { SandboxBackupCreatedEvent } from '../../events/sandbox-backup-created.event'
 import { WithSpan } from '../../../common/decorators/otel.decorator'
+import { RunnerApiError } from '../../errors/runner-api-error'
 
 @Injectable()
 export class SandboxArchiveAction extends SandboxAction {
@@ -121,6 +122,10 @@ export class SandboxArchiveAction extends SandboxAction {
 
         await this.updateSandboxState(sandbox, SandboxState.ARCHIVED, lockCode, null)
         return DONT_SYNC_AGAIN
+      }
+
+      if (error instanceof RunnerApiError && error.isConnectionError()) {
+        throw Object.assign(error, { recoverable: true, errorReason: error.message })
       }
 
       throw error

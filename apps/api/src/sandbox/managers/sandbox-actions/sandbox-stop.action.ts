@@ -14,6 +14,7 @@ import { RunnerAdapterFactory } from '../../runner-adapter/runnerAdapter'
 import { SandboxRepository } from '../../repositories/sandbox.repository'
 import { LockCode, RedisLockProvider } from '../../common/redis-lock.provider'
 import { WithSpan } from '../../../common/decorators/otel.decorator'
+import { RunnerApiError } from '../../errors/runner-api-error'
 
 @Injectable()
 export class SandboxStopAction extends SandboxAction {
@@ -35,43 +36,48 @@ export class SandboxStopAction extends SandboxAction {
 
     const runnerAdapter = await this.runnerAdapterFactory.create(runner)
 
-    if (sandbox.state === SandboxState.STARTED) {
-      // stop sandbox
-      await runnerAdapter.stopSandbox(sandbox.id)
-      await this.updateSandboxState(sandbox, SandboxState.STOPPING, lockCode)
+    try {
+      if (sandbox.state === SandboxState.STARTED) {
+        await runnerAdapter.stopSandbox(sandbox.id)
+        await this.updateSandboxState(sandbox, SandboxState.STOPPING, lockCode)
+        return SYNC_AGAIN
+      }
 
-      //  sync states again immediately for sandbox
+      if (sandbox.state !== SandboxState.STOPPING && sandbox.state !== SandboxState.ERROR) {
+        return DONT_SYNC_AGAIN
+      }
+
+      const sandboxInfo = await runnerAdapter.sandboxInfo(sandbox.id)
+
+      if (sandboxInfo.state === SandboxState.STOPPED) {
+        await this.updateSandboxState(
+          sandbox,
+          SandboxState.STOPPED,
+          lockCode,
+          undefined,
+          undefined,
+          undefined,
+          BackupState.NONE,
+        )
+        return DONT_SYNC_AGAIN
+      } else if (sandboxInfo.state === SandboxState.ERROR) {
+        await this.updateSandboxState(
+          sandbox,
+          SandboxState.ERROR,
+          lockCode,
+          undefined,
+          'Sandbox is in error state on runner',
+        )
+        return DONT_SYNC_AGAIN
+      }
+
       return SYNC_AGAIN
+    } catch (error) {
+      if (error instanceof RunnerApiError && error.isConnectionError()) {
+        throw Object.assign(error, { recoverable: true, errorReason: error.message })
+      }
+
+      throw error
     }
-
-    if (sandbox.state !== SandboxState.STOPPING && sandbox.state !== SandboxState.ERROR) {
-      return DONT_SYNC_AGAIN
-    }
-
-    const sandboxInfo = await runnerAdapter.sandboxInfo(sandbox.id)
-
-    if (sandboxInfo.state === SandboxState.STOPPED) {
-      await this.updateSandboxState(
-        sandbox,
-        SandboxState.STOPPED,
-        lockCode,
-        undefined,
-        undefined,
-        undefined,
-        BackupState.NONE,
-      )
-      return DONT_SYNC_AGAIN
-    } else if (sandboxInfo.state === SandboxState.ERROR) {
-      await this.updateSandboxState(
-        sandbox,
-        SandboxState.ERROR,
-        lockCode,
-        undefined,
-        'Sandbox is in error state on runner',
-      )
-      return DONT_SYNC_AGAIN
-    }
-
-    return SYNC_AGAIN
   }
 }

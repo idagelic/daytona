@@ -13,6 +13,7 @@ import { RunnerAdapterFactory } from '../../runner-adapter/runnerAdapter'
 import { SandboxRepository } from '../../repositories/sandbox.repository'
 import { LockCode, RedisLockProvider } from '../../common/redis-lock.provider'
 import { WithSpan } from '../../../common/decorators/otel.decorator'
+import { RunnerApiError } from '../../errors/runner-api-error'
 
 @Injectable()
 export class SandboxDestroyAction extends SandboxAction {
@@ -58,10 +59,13 @@ export class SandboxDestroyAction extends SandboxAction {
 
       return SYNC_AGAIN
     } catch (error) {
-      //  if the sandbox is not found on runner, it is already destroyed
       if (error.response?.status === 404 || error.statusCode === 404) {
         await this.updateSandboxState(sandbox, SandboxState.DESTROYED, lockCode)
         return DONT_SYNC_AGAIN
+      }
+
+      if (error instanceof RunnerApiError && error.isConnectionError()) {
+        throw Object.assign(error, { recoverable: true, errorReason: error.message })
       }
 
       throw error
