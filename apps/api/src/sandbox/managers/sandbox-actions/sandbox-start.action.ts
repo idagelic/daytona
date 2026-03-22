@@ -852,12 +852,19 @@ export class SandboxStartAction extends SandboxAction {
     const runnerAdapter = await this.runnerAdapterFactory.create(runner)
 
     try {
-      // First try to destroy the sandbox
       await runnerAdapter.destroySandbox(sandbox.id)
     } catch (error) {
-      if (error.response?.status !== 404 && error.statusCode !== 404) {
+      const isNotFound = error.response?.status === 404 || error.statusCode === 404
+      const isConnectionError = error.isConnectionError?.() ||
+        ['ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'EHOSTUNREACH'].some((c) => error.message?.includes(c))
+
+      if (!isNotFound && !isConnectionError) {
         this.logger.error(`Failed to cleanup sandbox ${sandbox.id} on previous runner ${runner.id}:`, error)
         throw error
+      }
+
+      if (isConnectionError) {
+        this.logger.warn(`Previous runner ${runner.id} unreachable during cleanup of sandbox ${sandbox.id}, proceeding`)
       }
     }
 
