@@ -30,9 +30,15 @@ export class RunnerAccessGuard implements CanActivate {
     private readonly regionService: RegionService,
   ) {}
 
+  private static readonly UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest()
     const runnerId: string = request.params.runnerId || request.params.id
+
+    if (!runnerId || !RunnerAccessGuard.UUID_REGEX.test(runnerId)) {
+      throw new NotFoundException('Runner not found')
+    }
 
     // TODO: initialize authContext safely
     const authContext: BaseAuthContext = request.user
