@@ -16,7 +16,7 @@ export class RedisHealthIndicator {
     private readonly healthIndicatorService: HealthIndicatorService,
   ) {
     this.redis = redis.duplicate({
-      commandTimeout: 1000,
+      commandTimeout: 5000,
     })
   }
 
