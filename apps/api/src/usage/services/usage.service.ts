@@ -66,6 +66,8 @@ export class UsageService implements TrackableJobExecutions, OnApplicationShutdo
           break
         }
       }
+    } catch (error) {
+      this.logger.error(`Failed to process usage for sandbox ${event.sandbox.id} (${event.oldState} → ${event.newState}):`, error)
     } finally {
       this.releaseLock(event.sandbox.id).catch((error) => {
         this.logger.error(`Error releasing lock for sandbox ${event.sandbox.id}`, error)
