@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0
  */
 
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { NotificationEmitter } from '../gateways/notification-emitter.abstract'
 import { SandboxEvents } from '../../sandbox/constants/sandbox-events.constants'
@@ -33,6 +33,8 @@ import { SANDBOX_EVENT_CHANNEL } from '../../common/constants/constants'
 
 @Injectable()
 export class NotificationService {
+  private readonly logger = new Logger(NotificationService.name)
+
   constructor(
     private readonly notificationEmitter: NotificationEmitter,
     private readonly regionService: RegionService,
@@ -42,22 +44,34 @@ export class NotificationService {
 
   @OnEvent(SandboxEvents.CREATED)
   async handleSandboxCreated(event: SandboxCreatedEvent) {
-    const dto = await this.sandboxService.toSandboxDto(event.sandbox)
-    this.notificationEmitter.emitSandboxCreated(dto)
+    try {
+      const dto = await this.sandboxService.toSandboxDto(event.sandbox)
+      this.notificationEmitter.emitSandboxCreated(dto)
+    } catch (error) {
+      this.logger.error(`Failed to handle sandbox created event for ${event.sandbox.id}:`, error)
+    }
   }
 
   @OnEvent(SandboxEvents.STATE_UPDATED)
   async handleSandboxStateUpdated(event: SandboxStateUpdatedEvent) {
-    const dto = await this.sandboxService.toSandboxDto(event.sandbox)
-    this.notificationEmitter.emitSandboxStateUpdated(dto, event.oldState, event.newState)
-    this.redis.publish(SANDBOX_EVENT_CHANNEL, JSON.stringify(event))
+    try {
+      const dto = await this.sandboxService.toSandboxDto(event.sandbox)
+      this.notificationEmitter.emitSandboxStateUpdated(dto, event.oldState, event.newState)
+      this.redis.publish(SANDBOX_EVENT_CHANNEL, JSON.stringify(event))
+    } catch (error) {
+      this.logger.error(`Failed to handle sandbox state updated event for ${event.sandbox.id}:`, error)
+    }
   }
 
   @OnEvent(SandboxEvents.DESIRED_STATE_UPDATED)
   async handleSandboxDesiredStateUpdated(event: SandboxDesiredStateUpdatedEvent) {
-    const dto = await this.sandboxService.toSandboxDto(event.sandbox)
-    this.notificationEmitter.emitSandboxDesiredStateUpdated(dto, event.oldDesiredState, event.newDesiredState)
-    this.redis.publish(SANDBOX_EVENT_CHANNEL, JSON.stringify(event))
+    try {
+      const dto = await this.sandboxService.toSandboxDto(event.sandbox)
+      this.notificationEmitter.emitSandboxDesiredStateUpdated(dto, event.oldDesiredState, event.newDesiredState)
+      this.redis.publish(SANDBOX_EVENT_CHANNEL, JSON.stringify(event))
+    } catch (error) {
+      this.logger.error(`Failed to handle sandbox desired state updated event for ${event.sandbox.id}:`, error)
+    }
   }
 
   @OnEvent(SnapshotEvents.CREATED)
