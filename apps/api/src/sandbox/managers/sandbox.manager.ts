@@ -701,18 +701,12 @@ export class SandboxManager implements TrackableJobExecutions, OnApplicationShut
             // Limit concurrent processing to avoid overwhelming the system
             if (pendingProcesses.length >= 10) {
               stream.pause()
-              Promise.allSettled(pendingProcesses.splice(0, pendingProcesses.length))
-                .then(() => stream.resume())
-                .catch(reject)
+              Promise.allSettled(pendingProcesses.splice(0, pendingProcesses.length)).then(() => stream.resume())
             }
           })
 
           stream.on('end', () => {
-            Promise.all(pendingProcesses)
-              .then(() => {
-                resolve()
-              })
-              .catch(reject)
+            Promise.allSettled(pendingProcesses).then(() => resolve())
           })
 
           stream.on('error', reject)
@@ -748,12 +742,15 @@ export class SandboxManager implements TrackableJobExecutions, OnApplicationShut
       },
     })
 
-    await Promise.all(
-      sandboxes.map(async (sandbox) => {
-        this.syncInstanceState(sandbox.id)
-      }),
-    )
-    await this.redisLockProvider.unlock(lockKey)
+    try {
+      await Promise.allSettled(
+        sandboxes.map(async (sandbox) => {
+          await this.syncInstanceState(sandbox.id)
+        }),
+      )
+    } finally {
+      await this.redisLockProvider.unlock(lockKey)
+    }
   }
 
   @Cron(CronExpression.EVERY_10_SECONDS, { name: 'sync-archived-completed-states' })
@@ -777,12 +774,15 @@ export class SandboxManager implements TrackableJobExecutions, OnApplicationShut
       },
     })
 
-    await Promise.allSettled(
-      sandboxes.map(async (sandbox) => {
-        await this.syncInstanceState(sandbox.id)
-      }),
-    )
-    await this.redisLockProvider.unlock(lockKey)
+    try {
+      await Promise.allSettled(
+        sandboxes.map(async (sandbox) => {
+          await this.syncInstanceState(sandbox.id)
+        }),
+      )
+    } finally {
+      await this.redisLockProvider.unlock(lockKey)
+    }
   }
 
   /**
