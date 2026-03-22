@@ -22,6 +22,7 @@ import {
   RawBodyRequest,
   Next,
   ParseBoolPipe,
+  OnModuleDestroy,
 } from '@nestjs/common'
 import { CombinedAuthGuard } from '../../auth/combined-auth.guard'
 import { SandboxService } from '../services/sandbox.service'
@@ -87,7 +88,7 @@ import { RegionSandboxAccessGuard } from '../guards/region-sandbox-access.guard'
 @UseGuards(CombinedAuthGuard, OrganizationResourceActionGuard, AuthenticatedRateLimitGuard)
 @ApiOAuth2(['openid', 'profile', 'email'])
 @ApiBearerAuth()
-export class SandboxController {
+export class SandboxController implements OnModuleDestroy {
   private readonly logger = new Logger(SandboxController.name)
   private readonly sandboxCallbacks: Map<string, (event: SandboxStateUpdatedEvent) => void> = new Map()
   private readonly redisSubscriber: Redis
@@ -111,6 +112,15 @@ export class SandboxController {
         return
       }
     })
+  }
+
+  async onModuleDestroy() {
+    try {
+      await this.redisSubscriber.unsubscribe(SANDBOX_EVENT_CHANNEL)
+      await this.redisSubscriber.quit()
+    } catch {
+      // Best-effort cleanup during shutdown
+    }
   }
 
   @Get()
