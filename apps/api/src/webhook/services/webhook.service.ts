@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { Injectable, Logger, OnModuleInit, ServiceUnavailableException } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { TypedConfigService } from '../../config/typed-config.service'
 import { Svix } from 'svix'
@@ -71,7 +71,7 @@ export class WebhookService implements OnModuleInit {
    */
   async createSvixApplication(organization: Organization): Promise<string> {
     if (!this.svix) {
-      throw new Error('Svix not configured')
+      throw new ServiceUnavailableException('Webhook service is not configured')
     }
 
     let existingWebhookInitialization = await this.getInitializationStatus(organization.id)
@@ -152,7 +152,7 @@ export class WebhookService implements OnModuleInit {
    */
   async getMessageAttempts(organizationId: string, messageId: string): Promise<any[]> {
     if (!this.svix) {
-      throw new Error('Svix not configured')
+      throw new ServiceUnavailableException('Webhook service is not configured')
     }
 
     try {
@@ -176,7 +176,7 @@ export class WebhookService implements OnModuleInit {
    */
   async getAppPortalAccess(organizationId: string): Promise<{ token: string; url: string }> {
     if (!this.svix) {
-      throw new Error('Svix not configured')
+      throw new ServiceUnavailableException('Webhook service is not configured')
     }
     try {
       const appPortalAccess = await this.svix.authentication.appPortalAccess(organizationId, {})
