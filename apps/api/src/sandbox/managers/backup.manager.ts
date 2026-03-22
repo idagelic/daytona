@@ -518,18 +518,30 @@ export class BackupManager implements TrackableJobExecutions, OnApplicationShutd
   @OnEvent(SandboxEvents.ARCHIVED)
   @TrackJobExecution()
   private async handleSandboxArchivedEvent(event: SandboxArchivedEvent) {
-    this.setBackupPending(event.sandbox)
+    try {
+      await this.setBackupPending(event.sandbox)
+    } catch (error) {
+      this.logger.error(`Failed to set backup pending for archived sandbox ${event.sandbox.id}:`, error)
+    }
   }
 
   @OnEvent(SandboxEvents.DESTROYED)
   @TrackJobExecution()
   private async handleSandboxDestroyedEvent(event: SandboxDestroyedEvent) {
-    this.deleteSandboxBackupRepositoryFromRegistry(event.sandbox)
+    try {
+      await this.deleteSandboxBackupRepositoryFromRegistry(event.sandbox)
+    } catch (error) {
+      this.logger.error(`Failed to delete backup for destroyed sandbox ${event.sandbox.id}:`, error)
+    }
   }
 
   @OnEvent(SandboxEvents.BACKUP_CREATED)
   @TrackJobExecution()
   private async handleSandboxBackupCreatedEvent(event: SandboxBackupCreatedEvent) {
-    this.setBackupPending(event.sandbox)
+    try {
+      await this.setBackupPending(event.sandbox)
+    } catch (error) {
+      this.logger.error(`Failed to set backup pending for sandbox ${event.sandbox.id}:`, error)
+    }
   }
 }
