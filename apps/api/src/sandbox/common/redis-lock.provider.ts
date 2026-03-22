@@ -41,11 +41,13 @@ export class RedisLockProvider {
     return exists === 1
   }
 
-  async waitForLock(key: string, ttl: number): Promise<void> {
-    while (true) {
+  async waitForLock(key: string, ttl: number, maxWaitMs = 30_000): Promise<boolean> {
+    const deadline = Date.now() + maxWaitMs
+    while (Date.now() < deadline) {
       const acquired = await this.lock(key, ttl)
-      if (acquired) break
+      if (acquired) return true
       await new Promise((resolve) => setTimeout(resolve, 50))
     }
+    return false
   }
 }
