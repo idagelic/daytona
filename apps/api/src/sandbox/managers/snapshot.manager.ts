@@ -813,8 +813,7 @@ export class SnapshotManager implements TrackableJobExecutions, OnApplicationShu
       try {
         await this.dockerRegistryService.removeImage(snapshot.imageName, transientRegistry.id)
       } catch (error) {
-        if (error.statusCode === 404) {
-          //  image not found, just return
+        if (error.statusCode === 404 || error.statusCode === 403 || error.response?.status === 403) {
           return DONT_SYNC_AGAIN
         }
         this.logger.error('Failed to remove transient image:', fromAxiosError(error))
