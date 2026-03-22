@@ -697,22 +697,27 @@ export class SandboxService {
         createSandboxDto.buildInfo.contextHashes,
       )
 
-      // Check if buildInfo with the same snapshotRef already exists
-      const existingBuildInfo = await this.buildInfoRepository.findOne({
-        where: { snapshotRef: buildInfoSnapshotRef },
+      const buildInfoEntity = this.buildInfoRepository.create({
+        ...createSandboxDto.buildInfo,
       })
 
-      if (existingBuildInfo) {
-        sandbox.buildInfo = existingBuildInfo
-        if (await this.redisLockProvider.lock(`build-info:${existingBuildInfo.snapshotRef}:update`, 60)) {
-          await this.buildInfoRepository.update(sandbox.buildInfo.snapshotRef, { lastUsedAt: new Date() })
-        }
-      } else {
-        const buildInfoEntity = this.buildInfoRepository.create({
-          ...createSandboxDto.buildInfo,
-        })
-        await this.buildInfoRepository.save(buildInfoEntity)
-        sandbox.buildInfo = buildInfoEntity
+      try {
+        await this.buildInfoRepository
+          .createQueryBuilder()
+          .insert()
+          .into('build_info')
+          .values(buildInfoEntity)
+          .orIgnore()
+          .execute()
+      } catch {
+        // Insert race — row already exists, proceed to fetch it
+      }
+
+      const existingBuildInfo = await this.buildInfoRepository.findOneBy({ snapshotRef: buildInfoSnapshotRef })
+      sandbox.buildInfo = existingBuildInfo || buildInfoEntity
+
+      if (existingBuildInfo && (await this.redisLockProvider.lock(`build-info:${existingBuildInfo.snapshotRef}:update`, 60))) {
+        await this.buildInfoRepository.update(existingBuildInfo.snapshotRef, { lastUsedAt: new Date() })
       }
 
       let runner: Runner
@@ -1804,16 +1809,20 @@ export class SandboxService {
   @LogExecution('cleanup-destroyed-sandboxes')
   @WithInstrumentation()
   async cleanupDestroyedSandboxes() {
-    const twentyFourHoursAgo = new Date()
-    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24)
+    try {
+      const twentyFourHoursAgo = new Date()
+      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24)
 
-    const destroyedSandboxs = await this.sandboxRepository.delete({
-      state: SandboxState.DESTROYED,
-      updatedAt: LessThan(twentyFourHoursAgo),
-    })
+      const destroyedSandboxs = await this.sandboxRepository.delete({
+        state: SandboxState.DESTROYED,
+        updatedAt: LessThan(twentyFourHoursAgo),
+      })
 
-    if (destroyedSandboxs.affected > 0) {
-      this.logger.debug(`Cleaned up ${destroyedSandboxs.affected} destroyed sandboxes`)
+      if (destroyedSandboxs.affected > 0) {
+        this.logger.debug(`Cleaned up ${destroyedSandboxs.affected} destroyed sandboxes`)
+      }
+    } catch (error) {
+      this.logger.error('Failed to cleanup destroyed sandboxes:', error)
     }
   }
 
@@ -1821,17 +1830,21 @@ export class SandboxService {
   @LogExecution('cleanup-build-failed-sandboxes')
   @WithInstrumentation()
   async cleanupBuildFailedSandboxes() {
-    const twentyFourHoursAgo = new Date()
-    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24)
+    try {
+      const twentyFourHoursAgo = new Date()
+      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24)
 
-    const destroyedSandboxs = await this.sandboxRepository.delete({
-      state: SandboxState.BUILD_FAILED,
-      desiredState: SandboxDesiredState.DESTROYED,
-      updatedAt: LessThan(twentyFourHoursAgo),
-    })
+      const destroyedSandboxs = await this.sandboxRepository.delete({
+        state: SandboxState.BUILD_FAILED,
+        desiredState: SandboxDesiredState.DESTROYED,
+        updatedAt: LessThan(twentyFourHoursAgo),
+      })
 
-    if (destroyedSandboxs.affected > 0) {
-      this.logger.debug(`Cleaned up ${destroyedSandboxs.affected} build failed sandboxes`)
+      if (destroyedSandboxs.affected > 0) {
+        this.logger.debug(`Cleaned up ${destroyedSandboxs.affected} build failed sandboxes`)
+      }
+    } catch (error) {
+      this.logger.error('Failed to cleanup build-failed sandboxes:', error)
     }
   }
 
@@ -1839,17 +1852,21 @@ export class SandboxService {
   @LogExecution('cleanup-stale-build-failed-sandboxes')
   @WithInstrumentation()
   async cleanupStaleBuildFailedSandboxes() {
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    try {
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-    const result = await this.sandboxRepository.delete({
-      state: SandboxState.BUILD_FAILED,
-      desiredState: SandboxDesiredState.STARTED,
-      updatedAt: LessThan(sevenDaysAgo),
-    })
+      const result = await this.sandboxRepository.delete({
+        state: SandboxState.BUILD_FAILED,
+        desiredState: SandboxDesiredState.STARTED,
+        updatedAt: LessThan(sevenDaysAgo),
+      })
 
-    if (result.affected > 0) {
-      this.logger.debug(`Cleaned up ${result.affected} stale build failed sandboxes`)
+      if (result.affected > 0) {
+        this.logger.debug(`Cleaned up ${result.affected} stale build failed sandboxes`)
+      }
+    } catch (error) {
+      this.logger.error('Failed to cleanup stale build-failed sandboxes:', error)
     }
   }
 
@@ -1857,17 +1874,21 @@ export class SandboxService {
   @LogExecution('cleanup-stale-error-sandboxes')
   @WithInstrumentation()
   async cleanupStaleErrorSandboxes() {
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    try {
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-    const result = await this.sandboxRepository.delete({
-      state: SandboxState.ERROR,
-      desiredState: SandboxDesiredState.DESTROYED,
-      updatedAt: LessThan(sevenDaysAgo),
-    })
+      const result = await this.sandboxRepository.delete({
+        state: SandboxState.ERROR,
+        desiredState: SandboxDesiredState.DESTROYED,
+        updatedAt: LessThan(sevenDaysAgo),
+      })
 
-    if (result.affected > 0) {
-      this.logger.debug(`Cleaned up ${result.affected} stale error sandboxes`)
+      if (result.affected > 0) {
+        this.logger.debug(`Cleaned up ${result.affected} stale error sandboxes`)
+      }
+    } catch (error) {
+      this.logger.error('Failed to cleanup stale error sandboxes:', error)
     }
   }
 
@@ -1993,7 +2014,13 @@ export class SandboxService {
 
   @OnEvent(WarmPoolEvents.TOPUP_REQUESTED)
   private async createWarmPoolSandbox(event: WarmPoolTopUpRequested) {
-    await this.createForWarmPool(event.warmPool)
+    try {
+      await this.createForWarmPool(event.warmPool)
+    } catch (error) {
+      this.logger.warn(
+        `Failed to create warm pool sandbox for snapshot "${event.warmPool.snapshot}" in target "${event.warmPool.target}": ${error.message}`,
+      )
+    }
   }
 
   @Cron(CronExpression.EVERY_MINUTE, { name: 'handle-unschedulable-runners' })
