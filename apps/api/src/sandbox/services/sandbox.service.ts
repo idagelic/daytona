@@ -697,22 +697,27 @@ export class SandboxService {
         createSandboxDto.buildInfo.contextHashes,
       )
 
-      // Check if buildInfo with the same snapshotRef already exists
-      const existingBuildInfo = await this.buildInfoRepository.findOne({
-        where: { snapshotRef: buildInfoSnapshotRef },
+      const buildInfoEntity = this.buildInfoRepository.create({
+        ...createSandboxDto.buildInfo,
       })
 
-      if (existingBuildInfo) {
-        sandbox.buildInfo = existingBuildInfo
-        if (await this.redisLockProvider.lock(`build-info:${existingBuildInfo.snapshotRef}:update`, 60)) {
-          await this.buildInfoRepository.update(sandbox.buildInfo.snapshotRef, { lastUsedAt: new Date() })
-        }
-      } else {
-        const buildInfoEntity = this.buildInfoRepository.create({
-          ...createSandboxDto.buildInfo,
-        })
-        await this.buildInfoRepository.save(buildInfoEntity)
-        sandbox.buildInfo = buildInfoEntity
+      try {
+        await this.buildInfoRepository
+          .createQueryBuilder()
+          .insert()
+          .into('build_info')
+          .values(buildInfoEntity)
+          .orIgnore()
+          .execute()
+      } catch {
+        // Insert race — row already exists, proceed to fetch it
+      }
+
+      const existingBuildInfo = await this.buildInfoRepository.findOneBy({ snapshotRef: buildInfoSnapshotRef })
+      sandbox.buildInfo = existingBuildInfo || buildInfoEntity
+
+      if (existingBuildInfo && (await this.redisLockProvider.lock(`build-info:${existingBuildInfo.snapshotRef}:update`, 60))) {
+        await this.buildInfoRepository.update(existingBuildInfo.snapshotRef, { lastUsedAt: new Date() })
       }
 
       let runner: Runner
@@ -1993,7 +1998,13 @@ export class SandboxService {
 
   @OnEvent(WarmPoolEvents.TOPUP_REQUESTED)
   private async createWarmPoolSandbox(event: WarmPoolTopUpRequested) {
-    await this.createForWarmPool(event.warmPool)
+    try {
+      await this.createForWarmPool(event.warmPool)
+    } catch (error) {
+      this.logger.warn(
+        `Failed to create warm pool sandbox for snapshot "${event.warmPool.snapshot}" in target "${event.warmPool.target}": ${error.message}`,
+      )
+    }
   }
 
   @Cron(CronExpression.EVERY_MINUTE, { name: 'handle-unschedulable-runners' })
