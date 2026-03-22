@@ -266,24 +266,28 @@ export class SnapshotService {
         createSnapshotDto.buildInfo.contextHashes,
       )
 
-      // Check if buildInfo with the same snapshotRef already exists
-      const existingBuildInfo = await this.buildInfoRepository.findOne({
-        where: { snapshotRef: buildSnapshotRef },
+      const buildInfoEntity = this.buildInfoRepository.create({
+        ...createSnapshotDto.buildInfo,
       })
 
-      if (existingBuildInfo) {
-        snapshot.buildInfo = existingBuildInfo
-        // Update lastUsed once per minute at most
-        if (await this.redisLockProvider.lock(`build-info:${existingBuildInfo.snapshotRef}:update`, 60)) {
-          existingBuildInfo.lastUsedAt = new Date()
-          await this.buildInfoRepository.save(existingBuildInfo)
-        }
-      } else {
-        const buildInfoEntity = this.buildInfoRepository.create({
-          ...createSnapshotDto.buildInfo,
-        })
-        await this.buildInfoRepository.save(buildInfoEntity)
-        snapshot.buildInfo = buildInfoEntity
+      try {
+        await this.buildInfoRepository
+          .createQueryBuilder()
+          .insert()
+          .into('build_info')
+          .values(buildInfoEntity)
+          .orIgnore()
+          .execute()
+      } catch {
+        // Insert race — row already exists, proceed to fetch it
+      }
+
+      const existingBuildInfo = await this.buildInfoRepository.findOneBy({ snapshotRef: buildSnapshotRef })
+      snapshot.buildInfo = existingBuildInfo || buildInfoEntity
+
+      if (existingBuildInfo && (await this.redisLockProvider.lock(`build-info:${existingBuildInfo.snapshotRef}:update`, 60))) {
+        existingBuildInfo.lastUsedAt = new Date()
+        await this.buildInfoRepository.save(existingBuildInfo)
       }
 
       const internalRegistry = await this.dockerRegistryService.getAvailableInternalRegistry(regionId)
@@ -688,9 +692,11 @@ export class SnapshotService {
     }
   }
 
-  // TODO: revise/cleanup
-  getEntrypointFromDockerfile(dockerfileContent: string): string[] {
-    // Match ENTRYPOINT with either a string or JSON array
+  getEntrypointFromDockerfile(dockerfileContent?: string | null): string[] {
+    if (!dockerfileContent) {
+      return ['sleep', 'infinity']
+    }
+
     const entrypointMatch = dockerfileContent.match(/ENTRYPOINT\s+(.*)/)
     if (entrypointMatch) {
       const rawEntrypoint = entrypointMatch[1].trim()
