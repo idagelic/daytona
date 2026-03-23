@@ -544,6 +544,11 @@ export class RunnerService {
           }
 
           // v0 runners: imperative health check via adapter
+          if (!runner.apiUrl) {
+            this.logger.warn(`Runner ${runner.id} has no API URL configured, skipping health check`)
+            return
+          }
+
           const shouldRetry = runner.state === RunnerState.READY
           const retryDelays = shouldRetry ? [500, 1000] : []
 
