@@ -620,6 +620,22 @@ export class SandboxStartAction extends SandboxAction {
         await this.updateSandboxState(sandbox, SandboxState.PULLING_SNAPSHOT, lockCode)
         break
       }
+      case SandboxState.STOPPED:
+      case SandboxState.STOPPING: {
+        this.logger.warn(
+          `Sandbox ${sandbox.id} reported ${sandboxInfo.state} on runner while desired state is started, will retry`,
+        )
+        if (await this.checkTimeoutError(sandbox, 15, `Timeout while starting sandbox: runner reports ${sandboxInfo.state}`)) {
+          return DONT_SYNC_AGAIN
+        }
+        break
+      }
+      case SandboxState.BUILDING_SNAPSHOT: {
+        if (await this.checkTimeoutError(sandbox, 30, 'Timeout while building snapshot during start')) {
+          return DONT_SYNC_AGAIN
+        }
+        break
+      }
       case SandboxState.DESTROYED: {
         this.logger.warn(
           `Sandbox ${sandbox.id} is in destroyed state while starting on runner ${sandbox.runnerId}, prev runner ${sandbox.prevRunnerId}`,
@@ -631,16 +647,11 @@ export class SandboxStartAction extends SandboxAction {
         )
         return DONT_SYNC_AGAIN
       }
-      // also any other state that is not STARTED
       default: {
-        this.logger.error(`Sandbox ${sandbox.id} is in unexpected state ${sandboxInfo.state}`)
-        await this.updateSandboxState(
-          sandbox,
-          SandboxState.ERROR,
-          lockCode,
-          undefined,
-          `Sandbox is in unexpected state: ${sandboxInfo.state}`,
-        )
+        this.logger.error(`Sandbox ${sandbox.id} is in unexpected state ${sandboxInfo.state} on runner`)
+        if (await this.checkTimeoutError(sandbox, 5, `Sandbox is in unexpected state: ${sandboxInfo.state}`)) {
+          return DONT_SYNC_AGAIN
+        }
         break
       }
     }
