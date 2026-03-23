@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0
  */
 
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { Sandbox } from '../../entities/sandbox.entity'
 import { SandboxState } from '../../enums/sandbox-state.enum'
 import { DONT_SYNC_AGAIN, SandboxAction, SyncState, SYNC_AGAIN } from './sandbox.action'
@@ -14,8 +14,12 @@ import { SandboxRepository } from '../../repositories/sandbox.repository'
 import { LockCode, RedisLockProvider } from '../../common/redis-lock.provider'
 import { WithSpan } from '../../../common/decorators/otel.decorator'
 
+const CONNECTION_ERROR_CODES = ['ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'EHOSTUNREACH', 'ENETUNREACH', 'EAI_AGAIN']
+
 @Injectable()
 export class SandboxDestroyAction extends SandboxAction {
+  private readonly logger = new Logger(SandboxDestroyAction.name)
+
   constructor(
     protected runnerService: RunnerService,
     protected runnerAdapterFactory: RunnerAdapterFactory,
@@ -58,8 +62,18 @@ export class SandboxDestroyAction extends SandboxAction {
 
       return SYNC_AGAIN
     } catch (error) {
-      //  if the sandbox is not found on runner, it is already destroyed
       if (error.response?.status === 404 || error.statusCode === 404) {
+        await this.updateSandboxState(sandbox, SandboxState.DESTROYED, lockCode)
+        return DONT_SYNC_AGAIN
+      }
+
+      const isConnectionError = CONNECTION_ERROR_CODES.some(
+        (code) => error.code === code || error.message?.includes(code),
+      )
+      if (isConnectionError && sandbox.state === SandboxState.DESTROYING) {
+        this.logger.warn(
+          `Runner unreachable during destroy of sandbox ${sandbox.id} (${error.code || error.message}), marking as destroyed`,
+        )
         await this.updateSandboxState(sandbox, SandboxState.DESTROYED, lockCode)
         return DONT_SYNC_AGAIN
       }
