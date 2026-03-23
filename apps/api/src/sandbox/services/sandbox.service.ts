@@ -1871,6 +1871,65 @@ export class SandboxService {
     }
   }
 
+  @Cron(CronExpression.EVERY_MINUTE, { name: 'cleanup-stuck-transitional-sandboxes' })
+  @LogExecution('cleanup-stuck-transitional-sandboxes')
+  @WithInstrumentation()
+  async cleanupStuckTransitionalSandboxes() {
+    try {
+      const thirtyMinutesAgo = new Date()
+      thirtyMinutesAgo.setMinutes(thirtyMinutesAgo.getMinutes() - 30)
+
+      const stuckStates = [
+        SandboxState.STOPPING,
+        SandboxState.DESTROYING,
+        SandboxState.CREATING,
+        SandboxState.STARTING,
+        SandboxState.RESTORING,
+      ]
+
+      const stuckSandboxes = await this.sandboxRepository.find({
+        where: {
+          state: In(stuckStates),
+          updatedAt: LessThan(thirtyMinutesAgo),
+        },
+        select: ['id', 'state', 'desiredState'],
+        take: 100,
+      })
+
+      for (const sandbox of stuckSandboxes) {
+        if (sandbox.desiredState === SandboxDesiredState.DESTROYED) {
+          await this.sandboxRepository.update(sandbox.id, {
+            updateData: { state: SandboxState.DESTROYED, errorReason: null },
+            entity: sandbox,
+          })
+          this.logger.warn(
+            `Force-transitioned stuck sandbox ${sandbox.id} from ${sandbox.state} to destroyed`,
+          )
+        } else {
+          await this.sandboxRepository.update(sandbox.id, {
+            updateData: {
+              state: SandboxState.ERROR,
+              errorReason: `Stuck in ${sandbox.state} state for over 30 minutes`,
+              recoverable: true,
+            },
+            entity: sandbox,
+          })
+          this.logger.warn(
+            `Marked stuck sandbox ${sandbox.id} as error (was ${sandbox.state} for >30min)`,
+          )
+        }
+      }
+
+      if (stuckSandboxes.length > 0) {
+        this.logger.log(
+          `Cleaned up ${stuckSandboxes.length} stuck transitional sandboxes`,
+        )
+      }
+    } catch (error) {
+      this.logger.error('Failed to cleanup stuck transitional sandboxes', error)
+    }
+  }
+
   async setAutostopInterval(sandboxIdOrName: string, interval: number, organizationId?: string): Promise<Sandbox> {
     const sandbox = await this.findOneByIdOrName(sandboxIdOrName, organizationId)
 
