@@ -89,9 +89,10 @@ func (d *DockerClient) Create(ctx context.Context, sandboxDto dto.CreateSandboxD
 	}
 	d.pullTracker.Remove(sandboxDto.Id)
 
-	err = d.validateImageArchitecture(image)
+	err = d.validateImageArchitecture(image, sandboxDto.Snapshot)
 	if err != nil {
-		d.logger.ErrorContext(ctx, "Failed to validate image architecture", "error", err)
+		d.logger.ErrorContext(ctx, "Failed to validate image architecture", "error", err, "snapshot", sandboxDto.Snapshot)
+		d.removeImageBestEffort(ctx, sandboxDto.Snapshot)
 		return "", "", err
 	}
 
@@ -161,14 +162,14 @@ func (d *DockerClient) Create(ctx context.Context, sandboxDto dto.CreateSandboxD
 	return c.ID, daemonVersion, nil
 }
 
-func (p *DockerClient) validateImageArchitecture(image *image.InspectResponse) error {
+func (p *DockerClient) validateImageArchitecture(img *image.InspectResponse, snapshotRef string) error {
 	defer timer.Timer()()
 
-	if image == nil {
+	if img == nil {
 		return fmt.Errorf("image not found")
 	}
 
-	arch := strings.ToLower(image.Architecture)
+	arch := strings.ToLower(img.Architecture)
 	validArchs := []string{"amd64", "x86_64"}
 
 	for _, validArch := range validArchs {
@@ -177,5 +178,23 @@ func (p *DockerClient) validateImageArchitecture(image *image.InspectResponse) e
 		}
 	}
 
-	return common_errors.NewConflictError(fmt.Errorf("image %s architecture (%s) is not x64 compatible", image.ID, image.Architecture))
+	ref := snapshotRef
+	if ref == "" {
+		ref = img.ID
+	}
+
+	return common_errors.NewConflictError(fmt.Errorf(
+		"snapshot %s has %s architecture which is not compatible with x64 runners. Please rebuild with an x64/amd64 base image",
+		ref, img.Architecture,
+	))
+}
+
+func (d *DockerClient) removeImageBestEffort(ctx context.Context, imageRef string) {
+	if imageRef == "" {
+		return
+	}
+	_, err := d.ImageRemove(ctx, imageRef, image.RemoveOptions{PruneChildren: true})
+	if err != nil {
+		d.logger.WarnContext(ctx, "Failed to remove incompatible image", "image", imageRef, "error", err)
+	}
 }
