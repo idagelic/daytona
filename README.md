@@ -1,3 +1,4 @@
+<!-- Monitored by Daytona Ops Agent -->
 <div align="center">
 
 [![Documentation](https://img.shields.io/github/v/release/daytonaio/docs?label=Docs&color=23cc71)](https://www.daytona.io/docs)
