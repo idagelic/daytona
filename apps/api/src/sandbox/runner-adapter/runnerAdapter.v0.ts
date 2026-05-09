@@ -111,10 +111,14 @@ export class RunnerAdapterV0 implements RunnerAdapter {
 
     const retryErrorMap = new WeakMap<AxiosError, string>()
 
-    // Configure axios-retry to handle network errors
+    // Configure axios-retry to handle network errors with exponential backoff
     axiosRetry(axiosInstance, {
       retries: 3,
-      retryDelay: axiosRetry.exponentialDelay,
+      retryDelay: (retryCount: number) => {
+        // Exponential backoff: 1s, 2s, 4s for attempts 1, 2, 3
+        const delay = Math.pow(2, retryCount - 1) * 1000
+        return delay
+      },
       retryCondition: (error) => {
         // Check if error code or message matches any retryable error
         const matchedErrorCode = RETRYABLE_NETWORK_ERROR_CODES.find(
@@ -130,8 +134,9 @@ export class RunnerAdapterV0 implements RunnerAdapter {
         return false
       },
       onRetry: (retryCount, error, requestConfig) => {
+        const delayUsed = Math.pow(2, retryCount - 1) * 1000 // Calculate the delay that was just used
         this.logger.warn(
-          `Retrying request due to ${retryErrorMap.get(error)} (attempt ${retryCount}): ${requestConfig.method?.toUpperCase()} ${requestConfig.url}`,
+          `Retrying request due to ${retryErrorMap.get(error)} (attempt ${retryCount}) after ${delayUsed}ms delay: ${requestConfig.method?.toUpperCase()} ${requestConfig.url}`,
         )
       },
     })
