@@ -213,8 +213,13 @@ export class ToolboxController {
           }
           fixRequestBody(proxyReq, req)
         },
-        proxyRes: (proxyRes, req, res) => {
-          // console.log('proxyRes', proxyRes)
+        proxyRes: (proxyRes, req) => {
+          if (proxyRes.statusCode === 401 || proxyRes.statusCode === 403) {
+            const sandboxId = req.url?.match(/^\/api\/toolbox\/([^\/]+)\/toolbox/)?.[1]
+            if (sandboxId) {
+              this.invalidateRunnerInfoCache(sandboxId).catch(() => {})
+            }
+          }
         },
       },
     }
@@ -230,34 +235,39 @@ export class ToolboxController {
     })
   }
 
-  private async getRunnerInfo(sandboxId: string): Promise<RunnerInfo> {
-    let runnerInfo: RunnerInfo | null = null
-    try {
-      const cached: { value: RunnerInfo } = JSON.parse(await this.redis.get(`${RUNNER_INFO_CACHE_PREFIX}${sandboxId}`))
-      runnerInfo = cached.value
-    } catch {
-      // Ignore error and fetch from db
+  private async getRunnerInfo(sandboxId: string, skipCache = false): Promise<RunnerInfo> {
+    if (!skipCache) {
+      try {
+        const cached: { value: RunnerInfo } = JSON.parse(await this.redis.get(`${RUNNER_INFO_CACHE_PREFIX}${sandboxId}`))
+        if (cached?.value) {
+          return cached.value
+        }
+      } catch {
+        // Ignore error and fetch from db
+      }
     }
 
-    if (!runnerInfo) {
-      const runner = await this.toolboxService.getRunner(sandboxId)
-      if (!runner.proxyUrl) {
-        throw new BadRequestException('Runner proxy URL not found')
-      }
-
-      runnerInfo = {
-        apiKey: runner.apiKey,
-        apiUrl: runner.proxyUrl,
-      }
-      await this.redis.set(
-        `${RUNNER_INFO_CACHE_PREFIX}${sandboxId}`,
-        JSON.stringify({ value: runnerInfo }),
-        'EX',
-        RUNNER_INFO_CACHE_TTL,
-      )
+    const runner = await this.toolboxService.getRunner(sandboxId)
+    if (!runner.proxyUrl) {
+      throw new BadRequestException('Runner proxy URL not found')
     }
+
+    const runnerInfo: RunnerInfo = {
+      apiKey: runner.apiKey,
+      apiUrl: runner.proxyUrl,
+    }
+    await this.redis.set(
+      `${RUNNER_INFO_CACHE_PREFIX}${sandboxId}`,
+      JSON.stringify({ value: runnerInfo }),
+      'EX',
+      RUNNER_INFO_CACHE_TTL,
+    )
 
     return runnerInfo
+  }
+
+  async invalidateRunnerInfoCache(sandboxId: string): Promise<void> {
+    await this.redis.del(`${RUNNER_INFO_CACHE_PREFIX}${sandboxId}`)
   }
 
   @Get(':sandboxId/toolbox/project-dir')
