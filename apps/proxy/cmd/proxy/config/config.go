@@ -27,6 +27,7 @@ type Config struct {
 	TLSKeyFile            string             `envconfig:"TLS_KEY_FILE"`
 	EnableTLS             bool               `envconfig:"ENABLE_TLS"`
 	DaytonaApiUrl         string             `envconfig:"DAYTONA_API_URL" validate:"required"`
+	DialTimeoutSec        int                `envconfig:"DIAL_TIMEOUT_SEC"`
 	Oidc                  OidcConfig         `envconfig:"OIDC"`
 	Redis                 *cache.RedisConfig `envconfig:"REDIS"`
 	ToolboxOnlyMode       bool               `envconfig:"TOOLBOX_ONLY_MODE"`
@@ -78,6 +79,10 @@ func GetConfig() (*Config, error) {
 
 	if config.ShutdownTimeoutSec == 0 {
 		config.ShutdownTimeoutSec = 60 * 60 // default to 1 hour
+	}
+
+	if config.DialTimeoutSec == 0 {
+		config.DialTimeoutSec = 10 // default to 10 seconds
 	}
 
 	if config.Redis != nil {
