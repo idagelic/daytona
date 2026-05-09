@@ -39,7 +39,10 @@ export class HealthController {
   @HealthCheck()
   async check() {
     try {
-      const result = await this.health.check([() => this.db.pingCheck('database'), () => this.redis.isHealthy('redis')])
+      const result = await this.health.check([
+        () => this.db.pingCheck('database', { timeout: 5000 }),
+        () => this.redis.isHealthy('redis'),
+      ])
       return { status: result.status }
     } catch (error) {
       this.logger.error(error)
