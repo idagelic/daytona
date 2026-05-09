@@ -18,6 +18,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { SandboxEvents } from '../../constants/sandbox-events.constants'
 import { SandboxBackupCreatedEvent } from '../../events/sandbox-backup-created.event'
 import { WithSpan } from '../../../common/decorators/otel.decorator'
+import { RunnerApiError } from '../../errors/runner-api-error'
 
 @Injectable()
 export class SandboxArchiveAction extends SandboxAction {
@@ -45,14 +46,20 @@ export class SandboxArchiveAction extends SandboxAction {
     }
 
     const lockKey = 'archive-lock-' + sandbox.runnerId
-    if (!(await this.redisLockProvider.lock(lockKey, 10))) {
+    if (!(await this.redisLockProvider.lock(lockKey, 30))) {
       return DONT_SYNC_AGAIN
     }
 
     const isFromErrorState = sandbox.state === SandboxState.ERROR
 
-    await this.redisLockProvider.unlock(lockKey)
+    try {
+    return await this._runArchive(sandbox, lockCode, isFromErrorState)
+    } finally {
+      await this.redisLockProvider.unlock(lockKey)
+    }
+  }
 
+  private async _runArchive(sandbox: Sandbox, lockCode: LockCode, isFromErrorState: boolean): Promise<SyncState> {
     //  if the backup state is error, we need to retry the backup
     if (sandbox.backupState === BackupState.ERROR) {
       const archiveErrorRetryKey = 'archive-error-retry-' + sandbox.id
@@ -121,6 +128,10 @@ export class SandboxArchiveAction extends SandboxAction {
 
         await this.updateSandboxState(sandbox, SandboxState.ARCHIVED, lockCode, null)
         return DONT_SYNC_AGAIN
+      }
+
+      if (error instanceof RunnerApiError && error.isConnectionError()) {
+        throw Object.assign(error, { recoverable: true, errorReason: error.message })
       }
 
       throw error
