@@ -157,25 +157,25 @@ func (d *DockerClient) Create(ctx context.Context, sandboxDto dto.CreateSandboxD
 	ip := GetContainerIpAddress(ctx, runningContainer)
 	if sandboxDto.NetworkBlockAll != nil && *sandboxDto.NetworkBlockAll {
 		go func() {
-			err = d.netRulesManager.SetNetworkRules(containerShortId, ip, "")
-			if err != nil {
-				d.logger.ErrorContext(ctx, "Failed to update sandbox network settings", "error", err)
+			setErr := d.netRulesManager.SetNetworkRules(containerShortId, ip, "")
+			if setErr != nil {
+				d.logger.ErrorContext(ctx, "Failed to update sandbox network settings", "error", setErr)
 			}
 		}()
 	} else if sandboxDto.NetworkAllowList != nil && *sandboxDto.NetworkAllowList != "" {
 		go func() {
-			err = d.netRulesManager.SetNetworkRules(containerShortId, ip, *sandboxDto.NetworkAllowList)
-			if err != nil {
-				d.logger.ErrorContext(ctx, "Failed to update sandbox network settings", "error", err)
+			setErr := d.netRulesManager.SetNetworkRules(containerShortId, ip, *sandboxDto.NetworkAllowList)
+			if setErr != nil {
+				d.logger.ErrorContext(ctx, "Failed to update sandbox network settings", "error", setErr)
 			}
 		}()
 	}
 
 	if sandboxDto.Metadata != nil && sandboxDto.Metadata["limitNetworkEgress"] == "true" {
 		go func() {
-			err = d.netRulesManager.SetNetworkLimiter(containerShortId, ip)
-			if err != nil {
-				d.logger.ErrorContext(ctx, "Failed to update sandbox network settings", "error", err)
+			limiterErr := d.netRulesManager.SetNetworkLimiter(containerShortId, ip)
+			if limiterErr != nil {
+				d.logger.ErrorContext(ctx, "Failed to update sandbox network settings", "error", limiterErr)
 			}
 		}()
 	}
