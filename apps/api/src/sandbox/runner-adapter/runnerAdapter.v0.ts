@@ -43,8 +43,7 @@ import { RunnerApiError } from '../errors/runner-api-error'
 
 const isDebugEnabled = process.env.DEBUG === 'true'
 
-// Network error codes that should trigger a retry
-const RETRYABLE_NETWORK_ERROR_CODES = ['ECONNRESET', 'ETIMEDOUT']
+const RETRYABLE_NETWORK_ERROR_CODES = ['ECONNRESET', 'ETIMEDOUT', 'ECONNREFUSED', 'EHOSTUNREACH', 'ENETUNREACH', 'EAI_AGAIN']
 
 @Injectable()
 export class RunnerAdapterV0 implements RunnerAdapter {
