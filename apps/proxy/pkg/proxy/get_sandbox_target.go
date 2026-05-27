@@ -312,7 +312,9 @@ func (p *Proxy) updateLastActivity(ctx context.Context, sandboxId string, should
 	// Prevent frequent updates by caching the last update
 	cached, err := p.sandboxLastActivityUpdateCache.Has(ctx, sandboxId)
 	if err != nil {
-		// If cache doesn't work, skip the update to avoid spamming the API
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			return
+		}
 		log.Errorf("failed to check last activity update cache for sandbox %s: %v", sandboxId, err)
 		return
 	}
@@ -333,7 +335,9 @@ func (p *Proxy) updateLastActivity(ctx context.Context, sandboxId string, should
 		// Expire a bit before the poll interval to avoid skipping one interval
 		err = p.sandboxLastActivityUpdateCache.Set(ctx, sandboxId, true, pollInterval-5*time.Second)
 		if err != nil {
-			log.Errorf("failed to set last activity update cache for sandbox %s: %v", sandboxId, err)
+			if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
+				log.Errorf("failed to set last activity update cache for sandbox %s: %v", sandboxId, err)
+			}
 		}
 	}
 
