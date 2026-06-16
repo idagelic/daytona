@@ -807,32 +807,33 @@ export class SnapshotManager implements TrackableJobExecutions, OnApplicationShu
       },
     })
 
-    await Promise.all(
-      snapshots.map(async (snapshot) => {
-        const countActiveSnapshots = await this.snapshotRepository.count({
-          where: {
-            state: SnapshotState.ACTIVE,
-            ref: snapshot.ref,
-          },
-        })
-
-        // Only remove snapshot runners if no other snapshots depend on them
-        if (countActiveSnapshots === 0) {
-          await this.snapshotRunnerRepository.update(
-            {
-              snapshotRef: snapshot.ref,
+    try {
+      await Promise.allSettled(
+        snapshots.map(async (snapshot) => {
+          const countActiveSnapshots = await this.snapshotRepository.count({
+            where: {
+              state: SnapshotState.ACTIVE,
+              ref: snapshot.ref,
             },
-            {
-              state: SnapshotRunnerState.REMOVING,
-            },
-          )
-        }
+          })
 
-        await this.snapshotRepository.remove(snapshot)
-      }),
-    )
+          if (countActiveSnapshots === 0) {
+            await this.snapshotRunnerRepository.update(
+              {
+                snapshotRef: snapshot.ref,
+              },
+              {
+                state: SnapshotRunnerState.REMOVING,
+              },
+            )
+          }
 
-    await this.redisLockProvider.unlock(lockKey)
+          await this.snapshotRepository.remove(snapshot)
+        }),
+      )
+    } finally {
+      await this.redisLockProvider.unlock(lockKey)
+    }
   }
 
   @Cron(CronExpression.EVERY_10_SECONDS, { name: 'check-snapshot-state' })
@@ -851,9 +852,9 @@ export class SnapshotManager implements TrackableJobExecutions, OnApplicationShu
       },
     })
 
-    await Promise.all(
+    await Promise.allSettled(
       snapshots.map(async (snapshot) => {
-        this.syncSnapshotState(snapshot.id)
+        await this.syncSnapshotState(snapshot.id)
       }),
     )
   }
@@ -894,7 +895,8 @@ export class SnapshotManager implements TrackableJobExecutions, OnApplicationShu
           break
       }
     } catch (error) {
-      if (error.code === 'ECONNRESET') {
+      const code = error.code || ''
+      if (['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'EHOSTUNREACH'].includes(code)) {
         syncState = SYNC_AGAIN
       } else {
         const message = error.message || String(error)
@@ -904,7 +906,7 @@ export class SnapshotManager implements TrackableJobExecutions, OnApplicationShu
 
     await this.redisLockProvider.unlock(lockKey)
     if (syncState === SYNC_AGAIN) {
-      this.syncSnapshotState(snapshotId)
+      await this.syncSnapshotState(snapshotId)
     }
   }
 
@@ -1093,8 +1095,7 @@ export class SnapshotManager implements TrackableJobExecutions, OnApplicationShu
       try {
         await this.dockerRegistryService.removeImage(snapshot.imageName, transientRegistry.id)
       } catch (error) {
-        if (error.statusCode === 404) {
-          //  image not found, just return
+        if (error.statusCode === 404 || error.statusCode === 403 || error.response?.status === 403) {
           return DONT_SYNC_AGAIN
         }
         this.logger.error('Failed to remove transient image:', fromAxiosError(error))
